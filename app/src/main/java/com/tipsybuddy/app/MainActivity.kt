@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -76,6 +77,7 @@ fun MainAppContent(
     userPrefs: UserPreferences
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     var currentScreen by remember { mutableStateOf(AppScreen.TONIGHT) }
 
     val todayStr = remember {
@@ -150,6 +152,7 @@ fun MainAppContent(
                                         sessionDate = todayStr
                                     )
                                 )
+                                com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
                             }
                         },
                         onNavigateToVenues = { currentScreen = AppScreen.VENUES },
@@ -174,11 +177,13 @@ fun MainAppContent(
                                         sessionDate = todayStr
                                     )
                                 )
+                                com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
                             }
                         },
                         onDeleteDrink = { drink ->
                             coroutineScope.launch {
                                 db.drinkDao().deleteDrink(drink)
+                                com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
                             }
                         }
                     )
@@ -234,6 +239,7 @@ fun MainAppContent(
                             coroutineScope.launch {
                                 db.drinkDao().clearAll()
                                 db.checkInDao().clearAll()
+                                com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
                             }
                         }
                     )

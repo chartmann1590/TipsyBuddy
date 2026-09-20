@@ -39,15 +39,43 @@ fun LogDrinksScreen(
 ) {
     val context = LocalContext.current
     var selectedCategory by remember { mutableStateOf("All") }
+    var searchQuery by remember { mutableStateOf("") }
     var showCustomDialog by remember { mutableStateOf(false) }
+    var celebrationMessage by remember { mutableStateOf<String?>(null) }
 
-    val categories = listOf("All", "Beer", "Wine", "Cocktail", "Shot", "Seltzer", "Water")
+    LaunchedEffect(celebrationMessage) {
+        if (celebrationMessage != null) {
+            kotlinx.coroutines.delay(2200)
+            celebrationMessage = null
+        }
+    }
 
-    val filteredPresets = remember(selectedCategory) {
-        if (selectedCategory == "All") {
-            BacCalculator.POPULAR_PRESETS
+    val categories = listOf(
+        "All",
+        "Domestic Beer",
+        "Import Beer",
+        "Craft Beer",
+        "Mixed Drinks",
+        "Cocktails",
+        "Seltzers",
+        "Shots",
+        "Wine",
+        "Water & Recovery"
+    )
+
+    val filteredPresets = remember(selectedCategory, searchQuery) {
+        val base = if (selectedCategory == "All") {
+            BacCalculator.BUILT_IN_CATALOG
         } else {
-            BacCalculator.POPULAR_PRESETS.filter { it.category.equals(selectedCategory, ignoreCase = true) }
+            BacCalculator.BUILT_IN_CATALOG.filter { it.category.equals(selectedCategory, ignoreCase = true) }
+        }
+        if (searchQuery.isBlank()) {
+            base
+        } else {
+            base.filter {
+                it.name.contains(searchQuery, ignoreCase = true) ||
+                it.category.contains(searchQuery, ignoreCase = true)
+            }
         }
     }
 
@@ -58,7 +86,7 @@ fun LogDrinksScreen(
             .fillMaxSize()
             .background(BgDark)
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // Header
         Row(
@@ -68,13 +96,13 @@ fun LogDrinksScreen(
         ) {
             Column {
                 Text(
-                    text = "Drink Logger",
+                    text = "Drink Logger 🍻",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
                 Text(
-                    text = "Select a preset or build a custom drink",
+                    text = "Tap popular beers, mixed drinks, or build custom",
                     fontSize = 12.sp,
                     color = TextSecondary
                 )
@@ -91,6 +119,61 @@ fun LogDrinksScreen(
             }
         }
 
+        // Celebration Animation Banner
+        androidx.compose.animation.AnimatedVisibility(
+            visible = celebrationMessage != null,
+            enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.scaleIn(),
+            exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut()
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0x3310B981),
+                border = BorderStroke(1.dp, NeonGreen),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = celebrationMessage ?: "",
+                        fontWeight = FontWeight.Bold,
+                        color = NeonGreen,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+        }
+
+        // Search Bar
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text("Search Bud Light, Heineken, Margarita, Vodka...", fontSize = 12.sp, color = TextMuted) },
+            leadingIcon = {
+                Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = TextMuted)
+            },
+            trailingIcon = {
+                if (searchQuery.isNotBlank()) {
+                    IconButton(onClick = { searchQuery = "" }) {
+                        Text(text = "✕", color = TextMuted, fontWeight = FontWeight.Bold)
+                    }
+                }
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(14.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = TextPrimary,
+                unfocusedTextColor = TextPrimary,
+                focusedBorderColor = NeonGold,
+                unfocusedBorderColor = CardBorder,
+                focusedContainerColor = SurfaceDark,
+                unfocusedContainerColor = SurfaceDark
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
         // Category Filter Chips
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -106,8 +189,8 @@ fun LogDrinksScreen(
                 ) {
                     Text(
                         text = category,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                        fontSize = 13.sp,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                        fontSize = 12.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                         color = if (isSelected) Color.Black else TextSecondary
                     )
@@ -116,13 +199,27 @@ fun LogDrinksScreen(
         }
 
         // Preset Drink Cards Grid/List
-        Text(
-            text = "PRESET DRINKS",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextMuted,
-            letterSpacing = 1.sp
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "BUILT-IN DRINKS (${filteredPresets.size})",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextMuted,
+                letterSpacing = 1.sp
+            )
+            if (searchQuery.isNotBlank()) {
+                Text(
+                    text = "Clear search",
+                    fontSize = 11.sp,
+                    color = NeonCyan,
+                    modifier = Modifier.clickable { searchQuery = "" }
+                )
+            }
+        }
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -131,10 +228,10 @@ fun LogDrinksScreen(
             items(filteredPresets) { preset ->
                 Card(
                     modifier = Modifier
-                        .width(150.dp)
+                        .width(155.dp)
                         .clickable {
                             onAddDrink(preset.name, preset.category, preset.volumeOz, preset.abv, preset.defaultPrice)
-                            Toast.makeText(context, "${preset.emoji} Added ${preset.name}", Toast.LENGTH_SHORT).show()
+                            celebrationMessage = "${preset.emoji} Added ${preset.name}! Tab +$${String.format(Locale.US, "%.2f", preset.defaultPrice)}"
                         },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = SurfaceDark),
@@ -144,10 +241,28 @@ fun LogDrinksScreen(
                         modifier = Modifier.padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(text = preset.emoji, fontSize = 28.sp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = preset.emoji, fontSize = 28.sp)
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFF0C1220),
+                                border = BorderStroke(1.dp, CardBorder)
+                            ) {
+                                Text(
+                                    text = preset.category.take(10),
+                                    fontSize = 9.sp,
+                                    color = TextMuted,
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                         Text(
                             text = preset.name,
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary,
                             maxLines = 1
@@ -158,7 +273,7 @@ fun LogDrinksScreen(
                             color = NeonCyan
                         )
                         Text(
-                            text = "$${String.format(Locale.US, "%.2f", preset.defaultPrice)}",
+                            text = if (preset.defaultPrice > 0) "$${String.format(Locale.US, "%.2f", preset.defaultPrice)}" else "Free / $0",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = NeonGreen

@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -66,6 +67,27 @@ fun TonightDashboardScreen(
             currentTimeMs = currentTimeMs
         )
     }
+
+    // Animated glow pulse around the BAC gauge
+    val infiniteTransition = rememberInfiniteTransition(label = "bacPulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = if (bacResult.bac > 0.0) 1.08f else 1.02f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = if (bacResult.bac >= 0.08) 800 else 1400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseScale"
+    )
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.15f,
+        targetValue = if (bacResult.bac > 0.0) 0.5f else 0.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = if (bacResult.bac >= 0.08) 800 else 1400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
 
     val todayStr = remember {
         SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(Date())
@@ -150,32 +172,49 @@ fun TonightDashboardScreen(
                     letterSpacing = 1.sp
                 )
 
-                // Large BAC Circular Gauge Display
+                // Large BAC Circular Gauge Display with Pulsing Glow Aura
                 Box(
-                    modifier = Modifier
-                        .size(160.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF0C1220))
-                        .border(
-                            width = 4.dp,
-                            color = Color(bacResult.zone.colorHex),
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(175.dp)
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = String.format(Locale.US, "%.3f", bacResult.bac) + "%",
-                            fontSize = 34.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color(bacResult.zone.colorHex)
-                        )
-                        Text(
-                            text = "BAC",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextSecondary
-                        )
+                    // Pulsing Outer Glow Aura
+                    Box(
+                        modifier = Modifier
+                            .size(160.dp)
+                            .scale(pulseScale)
+                            .clip(CircleShape)
+                            .background(
+                                Color(bacResult.zone.colorHex).copy(alpha = pulseAlpha * 0.4f)
+                            )
+                    )
+
+                    // Inner Circular Gauge
+                    Box(
+                        modifier = Modifier
+                            .size(160.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF0C1220))
+                            .border(
+                                width = 4.dp,
+                                color = Color(bacResult.zone.colorHex),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = String.format(Locale.US, "%.3f", bacResult.bac) + "%",
+                                fontSize = 34.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color(bacResult.zone.colorHex)
+                            )
+                            Text(
+                                text = "BAC",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextSecondary
+                            )
+                        }
                     }
                 }
 
@@ -488,10 +527,27 @@ private fun QuickDrinkButton(
     name: String,
     onClick: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val scale = remember { Animatable(1f) }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.clickable { onClick() }
+        modifier = Modifier
+            .scale(scale.value)
+            .clickable {
+                coroutineScope.launch {
+                    scale.animateTo(0.82f, animationSpec = tween(60))
+                    scale.animateTo(
+                        1.0f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    )
+                }
+                onClick()
+            }
     ) {
         Surface(
             shape = RoundedCornerShape(14.dp),

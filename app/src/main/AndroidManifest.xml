@@ -41,6 +41,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Home Screen App Widget Receiver -->
+        <receiver
+            android:name=".widget.TipsyWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.tipsybuddy.app.ACTION_ADD_BEER" />
+                <action android:name="com.tipsybuddy.app.ACTION_ADD_WATER" />
+                <action android:name="com.tipsybuddy.app.ACTION_UPDATE_WIDGET" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/tipsy_widget_info" />
+        </receiver>
     </application>
 
 </manifest>
