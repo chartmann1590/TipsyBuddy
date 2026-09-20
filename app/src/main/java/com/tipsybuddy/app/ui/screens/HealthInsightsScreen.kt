@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tipsybuddy.app.ads.AdMobBanner
 import com.tipsybuddy.app.data.DrinkEntity
 import com.tipsybuddy.app.data.UserPreferences
 import com.tipsybuddy.app.domain.BacCalculator
@@ -429,6 +430,8 @@ fun HealthInsightsScreen(
                 )
             }
         }
+
+        AdMobBanner(modifier = Modifier.fillMaxWidth())
     }
 }
 

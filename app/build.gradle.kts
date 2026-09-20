@@ -19,6 +19,18 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // Default = Google official test AdMob IDs (safe for debug / local builds).
+        // PRODUCTION: override these in buildTypes.release below before Play upload.
+        // See docs/ADMOB.md and AdsConfig.kt.
+        val testAppId = "ca-app-pub-3940256099942544~3347511713"
+        val testBannerId = "ca-app-pub-3940256099942544/6300978111"
+        val testInterstitialId = "ca-app-pub-3940256099942544/1033173712"
+
+        buildConfigField("String", "ADMOB_APP_ID", "\"$testAppId\"")
+        buildConfigField("String", "ADMOB_BANNER_ID", "\"$testBannerId\"")
+        buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"$testInterstitialId\"")
+        manifestPlaceholders["admobAppId"] = testAppId
     }
 
     buildTypes {
@@ -28,9 +40,32 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // -----------------------------------------------------------------
+            // PRODUCTION AdMob IDs — replace placeholders before shipping.
+            // Create App + Banner + Interstitial units in AdMob console, then:
+            //   ADMOB_APP_ID          = ca-app-pub-XXXX~YYYY
+            //   ADMOB_BANNER_ID       = ca-app-pub-XXXX/BBBB
+            //   ADMOB_INTERSTITIAL_ID = ca-app-pub-XXXX/IIII
+            // Until replaced, release still uses Google test IDs so builds work.
+            // -----------------------------------------------------------------
+            val prodAppId = "ca-app-pub-3940256099942544~3347511713" // TODO: production App ID
+            val prodBannerId = "ca-app-pub-3940256099942544/6300978111" // TODO: production banner
+            val prodInterstitialId = "ca-app-pub-3940256099942544/1033173712" // TODO: production interstitial
+            buildConfigField("String", "ADMOB_APP_ID", "\"$prodAppId\"")
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"$prodBannerId\"")
+            buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"$prodInterstitialId\"")
+            manifestPlaceholders["admobAppId"] = prodAppId
         }
         debug {
             isMinifyEnabled = false
+            // Explicit test IDs for clarity (same as defaultConfig)
+            val testAppId = "ca-app-pub-3940256099942544~3347511713"
+            val testBannerId = "ca-app-pub-3940256099942544/6300978111"
+            val testInterstitialId = "ca-app-pub-3940256099942544/1033173712"
+            buildConfigField("String", "ADMOB_APP_ID", "\"$testAppId\"")
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"$testBannerId\"")
+            buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"$testInterstitialId\"")
+            manifestPlaceholders["admobAppId"] = testAppId
         }
     }
 
@@ -89,4 +124,7 @@ dependencies {
     // Wear OS Data Layer Communication
     implementation(libs.play.services.wearable)
     implementation(libs.kotlinx.coroutines.play.services)
+
+    // Google Mobile Ads (AdMob) — version from gradle/libs.versions.toml
+    implementation(libs.play.services.ads)
 }
