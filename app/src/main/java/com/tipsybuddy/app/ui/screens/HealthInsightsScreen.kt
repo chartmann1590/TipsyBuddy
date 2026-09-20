@@ -124,7 +124,7 @@ fun HealthInsightsScreen(
                 ) {
                     Text(text = "Standard Drinks Consumed:", fontSize = 12.sp, color = TextSecondary)
                     Text(
-                        text = "${String.format(Locale.US, \"%.1f\", bacResult.standardDrinks)} units",
+                        text = String.format(Locale.US, "%.1f units", bacResult.standardDrinks),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = NeonGold
