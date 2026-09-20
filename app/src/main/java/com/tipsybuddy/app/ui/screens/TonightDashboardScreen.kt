@@ -360,7 +360,7 @@ fun TonightDashboardScreen(
                 Column(modifier = Modifier.padding(14.dp)) {
                     Text(text = "DRINKS", fontSize = 11.sp, color = TextMuted, fontWeight = FontWeight.Bold)
                     Text(
-                        text = "${drinks.filter { it.category != "Water" }.size}",
+                        text = "${drinks.count { it.isAlcoholic }}",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = NeonGold

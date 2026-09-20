@@ -104,10 +104,10 @@ object BacCalculator {
         DrinkPreset("Rosé Wine", "Wine", 5.0, 12.5, 10.50, "🍷"),
 
         // Water & Recovery
-        DrinkPreset("Pint of Ice Water", "Water & Recovery", 16.0, 0.0, 0.00, "💧"),
-        DrinkPreset("Club Soda with Lime", "Water & Recovery", 12.0, 0.0, 2.00, "🫧"),
-        DrinkPreset("Liquid Death Sparkling", "Water & Recovery", 16.0, 0.0, 3.50, "💧"),
-        DrinkPreset("Electrolyte Sports Drink", "Water & Recovery", 16.0, 0.0, 3.50, "⚡")
+        DrinkPreset("Pint of Ice Water", "Water", 16.0, 0.0, 0.00, "💧"),
+        DrinkPreset("Club Soda with Lime", "Water", 12.0, 0.0, 2.00, "🫧"),
+        DrinkPreset("Liquid Death Sparkling", "Water", 16.0, 0.0, 3.50, "💧"),
+        DrinkPreset("Electrolyte Sports Drink", "Water", 16.0, 0.0, 3.50, "⚡")
     )
 
     val POPULAR_PRESETS = BUILT_IN_CATALOG
@@ -133,8 +133,8 @@ object BacCalculator {
             )
         }
 
-        val alcoholDrinks = drinks.filter { it.category != "Water" && it.abv > 0.0 }
-        val waterDrinks = drinks.filter { it.category == "Water" || it.abv == 0.0 }
+        val alcoholDrinks = drinks.filter { it.isAlcoholic }
+        val waterDrinks = drinks.filter { it.isWater }
 
         val waterCount = waterDrinks.size
         val alcoholCount = alcoholDrinks.size

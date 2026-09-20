@@ -64,17 +64,18 @@ fun LogDrinksScreen(
     )
 
     val filteredPresets = remember(selectedCategory, searchQuery) {
-        val base = if (selectedCategory == "All") {
-            BacCalculator.BUILT_IN_CATALOG
-        } else {
-            BacCalculator.BUILT_IN_CATALOG.filter { it.category.equals(selectedCategory, ignoreCase = true) }
+        val base = when (selectedCategory) {
+            "All" -> BacCalculator.BUILT_IN_CATALOG
+            "Water & Recovery", "Water" -> BacCalculator.BUILT_IN_CATALOG.filter { it.category == "Water" || it.abv == 0.0 }
+            else -> BacCalculator.BUILT_IN_CATALOG.filter { it.category.equals(selectedCategory, ignoreCase = true) }
         }
         if (searchQuery.isBlank()) {
             base
         } else {
             base.filter {
                 it.name.contains(searchQuery, ignoreCase = true) ||
-                it.category.contains(searchQuery, ignoreCase = true)
+                it.category.contains(searchQuery, ignoreCase = true) ||
+                (searchQuery.contains("water", ignoreCase = true) && it.category == "Water")
             }
         }
     }
@@ -343,13 +344,13 @@ fun LogDrinksScreen(
                                     .background(Color(0xFF0C1220)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                val emoji = when (drink.category) {
-                                    "Beer" -> "🍺"
-                                    "Wine" -> "🍷"
-                                    "Cocktail" -> "🍸"
-                                    "Shot" -> "🍋"
-                                    "Seltzer" -> "🥤"
-                                    "Water" -> "💧"
+                                val emoji = when {
+                                    drink.isWater -> "💧"
+                                    drink.category.contains("Beer", ignoreCase = true) -> "🍺"
+                                    drink.category.contains("Wine", ignoreCase = true) -> "🍷"
+                                    drink.category.contains("Cocktail", ignoreCase = true) -> "🍸"
+                                    drink.category.contains("Shot", ignoreCase = true) -> "🍋"
+                                    drink.category.contains("Seltzer", ignoreCase = true) -> "🥤"
                                     else -> "🍹"
                                 }
                                 Text(text = emoji, fontSize = 20.sp)

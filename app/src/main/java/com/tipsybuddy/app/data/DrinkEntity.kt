@@ -14,4 +14,11 @@ data class DrinkEntity(
     val price: Double = 0.0,
     val timestamp: Long = System.currentTimeMillis(),
     val sessionDate: String // Format: YYYY-MM-DD
-)
+) {
+    val isAlcoholic: Boolean
+        get() = abv > 0.0 && !category.equals("Water", ignoreCase = true) && !category.contains("Water", ignoreCase = true)
+
+    val isWater: Boolean
+        get() = !isAlcoholic
+}
+

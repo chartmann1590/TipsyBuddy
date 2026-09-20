@@ -117,7 +117,7 @@ class TipsyWidgetProvider : AppWidgetProvider() {
                 views.setTextColor(R.id.widget_bac_text, if (bacResult.bac == 0.0) Color.parseColor("#10B981") else zoneColor)
 
                 // Subtitle: drink counts & advice
-                val alcoholCount = drinks.filter { it.category != "Water" }.size
+                val alcoholCount = drinks.count { it.isAlcoholic }
                 val statusText = if (alcoholCount == 0) {
                     "0 drinks tonight • Reflexes clear"
                 } else {
