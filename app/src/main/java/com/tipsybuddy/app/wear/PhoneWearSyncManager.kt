@@ -216,7 +216,13 @@ class PhoneWearSyncManager private constructor(private val context: Context) :
                                 } else {
                                     Log.d(TAG, "Action $actionId already processed, deleting DataItem")
                                 }
-                                dataClient.deleteDataItems(uri).await()
+                                // Use wildcard authority to reliably delete cross-node DataItems from the Wearable network
+                                val wildcardUri = Uri.Builder().scheme("wear").authority("*").path(uri.path).build()
+                                try {
+                                    dataClient.deleteDataItems(wildcardUri).await()
+                                } catch (_: Exception) {
+                                    dataClient.deleteDataItems(uri).await()
+                                }
                             } catch (e: Exception) {
                                 Log.e(TAG, "Error handling offline action $actionId", e)
                             }

@@ -108,14 +108,19 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private var hasRequestedPermissions = false
+
     private fun checkAndRequestPermissionsAndStartSensors() {
         val missingPermissions = requiredPermissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
         if (missingPermissions.isEmpty()) {
             sensorManager.startListening()
-        } else {
+        } else if (!hasRequestedPermissions) {
+            hasRequestedPermissions = true
             permissionLauncher.launch(missingPermissions.toTypedArray())
+        } else {
+            sensorManager.startListening()
         }
     }
 
