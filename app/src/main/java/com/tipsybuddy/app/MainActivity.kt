@@ -21,8 +21,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.tipsybuddy.app.data.*
+import com.tipsybuddy.app.domain.BacCalculator
 import com.tipsybuddy.app.ui.screens.*
 import com.tipsybuddy.app.ui.theme.*
+import com.tipsybuddy.app.wear.PhoneWearSyncManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -88,6 +90,23 @@ fun MainAppContent(
     val tonightDrinks by db.drinkDao().getDrinksForSession(todayStr).collectAsState(initial = emptyList())
     val allDrinks by db.drinkDao().getAllDrinks().collectAsState(initial = emptyList())
     val latestCheckIn by db.checkInDao().getLatestCheckIn().collectAsState(initial = null)
+
+    // Wear OS Smartwatch Companion Sync
+    val wearSyncManager = remember { PhoneWearSyncManager.getInstance(context) }
+    val watchVitals by wearSyncManager.watchVitals.collectAsState()
+
+    LaunchedEffect(tonightDrinks, latestCheckIn) {
+        val bacResult = BacCalculator.calculate(
+            drinks = tonightDrinks,
+            weightLbs = userPrefs.weightLbs,
+            gender = userPrefs.gender
+        )
+        wearSyncManager.pushSessionState(
+            bacResult = bacResult,
+            latestVenue = latestCheckIn?.venueName ?: "",
+            emergencyPhone = userPrefs.emergencyContactPhone
+        )
+    }
 
 
     Scaffold(
@@ -200,7 +219,8 @@ fun MainAppContent(
                 AppScreen.HEALTH -> {
                     HealthInsightsScreen(
                         drinks = tonightDrinks,
-                        userPrefs = userPrefs
+                        userPrefs = userPrefs,
+                        watchVitals = watchVitals
                     )
                 }
 
