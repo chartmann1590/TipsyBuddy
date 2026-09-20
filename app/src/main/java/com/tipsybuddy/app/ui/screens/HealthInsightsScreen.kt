@@ -133,14 +133,19 @@ fun HealthInsightsScreen(
                         ) {
                             Text(text = "❤️", fontSize = 16.sp)
                             Text(
-                                text = if (watchVitals.heartRateBpm > 0) "${watchVitals.heartRateBpm} BPM" else "76 BPM",
+                                text = if (watchVitals.heartRateBpm > 0) "${watchVitals.heartRateBpm} BPM" else "-- BPM",
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = if (watchVitals.isTachycardiaRisk) CoralRed else NeonCyan
+                                color = if (watchVitals.heartRateBpm > 0 && watchVitals.isTachycardiaRisk) CoralRed else if (watchVitals.heartRateBpm > 0) NeonCyan else TextMuted
                             )
                         }
                         Text(
-                            text = if (watchVitals.peakHeartRateBpm > 0) "Peak: ${watchVitals.peakHeartRateBpm} BPM" else "Resting Rate",
+                            text = when {
+                                watchVitals.heartRateBpm > 0 && watchVitals.peakHeartRateBpm > 0 -> "Peak: ${watchVitals.peakHeartRateBpm} BPM"
+                                watchVitals.heartRateBpm > 0 -> "Active Rate"
+                                watchVitals.isWatchConnected -> "Awaiting Reading..."
+                                else -> "Watch Not Synced"
+                            },
                             fontSize = 11.sp,
                             color = TextSecondary
                         )
@@ -168,7 +173,7 @@ fun HealthInsightsScreen(
                     }
                 }
 
-                if (watchVitals.isTachycardiaRisk || (bacResult.bac >= 0.05 && watchVitals.heartRateBpm > 85)) {
+                if (watchVitals.heartRateBpm > 0 && (watchVitals.isTachycardiaRisk || (bacResult.bac >= 0.05 && watchVitals.heartRateBpm > 85))) {
                     Surface(
                         shape = RoundedCornerShape(10.dp),
                         color = Color(0x22EF4444),

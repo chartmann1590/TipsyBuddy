@@ -7,6 +7,7 @@ import com.google.gson.Gson
 import com.tipsybuddy.wear.data.WearHealthVitals
 import com.tipsybuddy.wear.data.WearQuickDrink
 import com.tipsybuddy.wear.data.WearSessionState
+import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -107,7 +108,9 @@ class WearSyncManager private constructor(private val context: Context) :
 
     fun sendQuickAddDrink(drink: WearQuickDrink) {
         scope.launch {
+            val actionId = UUID.randomUUID().toString()
             val payload = mapOf(
+                "actionId" to actionId,
                 "name" to drink.name,
                 "category" to drink.category,
                 "volumeOz" to drink.volumeOz,
@@ -116,18 +119,22 @@ class WearSyncManager private constructor(private val context: Context) :
                 "timestamp" to System.currentTimeMillis()
             )
             val json = gson.toJson(payload)
+            queueActionViaDataApi(actionId, ACTION_TYPE_DRINK, json)
             sendMessageToPhone(PATH_QUICK_ADD_DRINK, json.toByteArray(Charsets.UTF_8))
         }
     }
 
     fun sendQuickCheckIn(venueName: String, address: String = "") {
         scope.launch {
+            val actionId = UUID.randomUUID().toString()
             val payload = mapOf(
+                "actionId" to actionId,
                 "venueName" to venueName,
                 "address" to address,
                 "timestamp" to System.currentTimeMillis()
             )
             val json = gson.toJson(payload)
+            queueActionViaDataApi(actionId, ACTION_TYPE_CHECK_IN, json)
             sendMessageToPhone(PATH_QUICK_CHECK_IN, json.toByteArray(Charsets.UTF_8))
         }
     }
@@ -153,7 +160,30 @@ class WearSyncManager private constructor(private val context: Context) :
 
     fun sendRequestRide() {
         scope.launch {
-            sendMessageToPhone(PATH_REQUEST_RIDE, "summon_ride".toByteArray(Charsets.UTF_8))
+            val actionId = UUID.randomUUID().toString()
+            val payload = mapOf(
+                "actionId" to actionId,
+                "timestamp" to System.currentTimeMillis()
+            )
+            val json = gson.toJson(payload)
+            queueActionViaDataApi(actionId, ACTION_TYPE_RIDE, json)
+            sendMessageToPhone(PATH_REQUEST_RIDE, json.toByteArray(Charsets.UTF_8))
+        }
+    }
+
+    private suspend fun queueActionViaDataApi(actionId: String, actionType: String, payloadJson: String) {
+        try {
+            val putDataReq = PutDataMapRequest.create("$PATH_ACTIONS_PREFIX$actionId").apply {
+                dataMap.putString("action_id", actionId)
+                dataMap.putString("action_type", actionType)
+                dataMap.putString("payload", payloadJson)
+                dataMap.putLong("timestamp", System.currentTimeMillis())
+            }.asPutDataRequest().setUrgent()
+
+            dataClient.putDataItem(putDataReq).await()
+            Log.d(TAG, "Queued action $actionType ($actionId) in Wear DataLayer")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to queue action $actionType via DataClient", e)
         }
     }
 
@@ -161,7 +191,7 @@ class WearSyncManager private constructor(private val context: Context) :
         try {
             val nodes = nodeClient.connectedNodes.await()
             if (nodes.isEmpty()) {
-                Log.w(TAG, "No connected phone found for message $path")
+                Log.w(TAG, "No connected phone found for message $path; queued in DataLayer")
                 return
             }
             for (node in nodes) {
@@ -169,7 +199,7 @@ class WearSyncManager private constructor(private val context: Context) :
                 Log.d(TAG, "Sent message $path to node ${node.displayName}")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to send message $path to phone", e)
+            Log.e(TAG, "Failed to send message $path to phone (persisted via DataLayer)", e)
         }
     }
 
@@ -178,6 +208,10 @@ class WearSyncManager private constructor(private val context: Context) :
         const val CAPABILITY_PHONE_APP = "tipsy_buddy_phone"
         const val PATH_SESSION_STATE = "/tipsy/session_state"
         const val PATH_HEALTH_STATS = "/tipsy/health_stats"
+        const val PATH_ACTIONS_PREFIX = "/tipsy/actions/"
+        const val ACTION_TYPE_DRINK = "quick_add_drink"
+        const val ACTION_TYPE_CHECK_IN = "quick_check_in"
+        const val ACTION_TYPE_RIDE = "request_ride"
         const val PATH_QUICK_ADD_DRINK = "/tipsy/quick_add_drink"
         const val PATH_QUICK_CHECK_IN = "/tipsy/quick_check_in"
         const val PATH_REQUEST_RIDE = "/tipsy/request_ride"

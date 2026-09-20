@@ -227,7 +227,7 @@ fun WearDashboardScreen(
                             vibrator?.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
                         } catch (_: Exception) {}
                         onQuickAddWater()
-                        confirmationMessage = "💧 Water Logged! +Hydration"
+                        confirmationMessage = if (isPhoneConnected) "💧 Water Logged! +Hydration" else "💧 Water Queued (Offline)"
                     },
                     colors = ChipDefaults.secondaryChipColors(
                         backgroundColor = Color(0xFF0284C7),
@@ -304,7 +304,7 @@ fun WearDashboardScreen(
                             vibrator?.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
                         } catch (_: Exception) {}
                         onRequestRide()
-                        confirmationMessage = "🚕 Ride Summon Sent to Phone!"
+                        confirmationMessage = if (isPhoneConnected) "🚕 Ride Summon Sent to Phone!" else "🚕 Ride Queued (Syncs when connected)"
                     },
                     colors = ChipDefaults.secondaryChipColors(
                         backgroundColor = Color(0x33EF4444),

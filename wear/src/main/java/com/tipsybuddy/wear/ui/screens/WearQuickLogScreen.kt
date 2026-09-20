@@ -23,6 +23,7 @@ import com.tipsybuddy.wear.ui.theme.*
 
 @Composable
 fun WearQuickLogScreen(
+    isPhoneConnected: Boolean = true,
     onDrinkSelected: (WearQuickDrink) -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -52,7 +53,7 @@ fun WearQuickLogScreen(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(text = "✅", fontSize = 32.sp)
                     Text(
@@ -63,10 +64,19 @@ fun WearQuickLogScreen(
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "Logged & Synced!",
+                        text = if (isPhoneConnected) "Logged & Synced!" else "Logged & Queued!",
                         fontSize = 11.sp,
-                        color = TextSecondary
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isPhoneConnected) TextSecondary else NeonGold
                     )
+                    if (!isPhoneConnected) {
+                        Text(
+                            text = "Syncs when phone connects",
+                            fontSize = 9.sp,
+                            color = TextMuted,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         } else {

@@ -1,10 +1,15 @@
 package com.tipsybuddy.wear
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.core.content.ContextCompat
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
@@ -18,6 +23,18 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var syncManager: WearSyncManager
     private lateinit var sensorManager: HeartRateSensorManager
+
+    private val requiredPermissions = arrayOf(
+        Manifest.permission.BODY_SENSORS,
+        Manifest.permission.ACTIVITY_RECOGNITION
+    )
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        Log.d("TipsyWear", "Permissions callback result: $permissions")
+        sensorManager.startListening()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +74,7 @@ class MainActivity : ComponentActivity() {
 
                     composable("quick_log") {
                         WearQuickLogScreen(
+                            isPhoneConnected = isPhoneConnected,
                             onDrinkSelected = { drink ->
                                 syncManager.sendQuickAddDrink(drink)
                             },
@@ -66,6 +84,7 @@ class MainActivity : ComponentActivity() {
 
                     composable("check_in") {
                         WearCheckInScreen(
+                            isPhoneConnected = isPhoneConnected,
                             onCheckInSelected = { venueName ->
                                 syncManager.sendQuickCheckIn(venueName)
                             },
@@ -89,9 +108,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun checkAndRequestPermissionsAndStartSensors() {
+        val missingPermissions = requiredPermissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+        if (missingPermissions.isEmpty()) {
+            sensorManager.startListening()
+        } else {
+            permissionLauncher.launch(missingPermissions.toTypedArray())
+        }
+    }
+
     override fun onResume() {
         super.onResume()
-        sensorManager.startListening()
+        checkAndRequestPermissionsAndStartSensors()
         syncManager.checkConnection()
         syncManager.requestStateRefresh()
     }

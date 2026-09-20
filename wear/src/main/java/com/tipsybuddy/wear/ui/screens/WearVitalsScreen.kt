@@ -121,7 +121,7 @@ fun WearVitalsScreen(
                             }
 
                             Text(
-                                text = if (currentHeartRate > 0) "$currentHeartRate BPM" else if (hasHeartRateSensor) "Measuring..." else "78 BPM (Est)",
+                                text = if (currentHeartRate > 0) "$currentHeartRate BPM" else if (hasHeartRateSensor) "Measuring..." else "-- BPM",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = if (currentHeartRate >= 95) CoralRed else TextPrimary
@@ -141,6 +141,12 @@ fun WearVitalsScreen(
                                 text = "Peak tonight: $peakHeartRate BPM",
                                 fontSize = 9.sp,
                                 color = TextSecondary
+                            )
+                        } else if (!hasHeartRateSensor) {
+                            Text(
+                                text = "Sensor Unavailable",
+                                fontSize = 9.sp,
+                                color = TextMuted
                             )
                         }
                     }

@@ -22,6 +22,7 @@ data class VenuePreset(val title: String, val emoji: String, val subtitle: Strin
 
 @Composable
 fun WearCheckInScreen(
+    isPhoneConnected: Boolean = true,
     onCheckInSelected: (venueName: String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -62,19 +63,26 @@ fun WearCheckInScreen(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(text = "📍", fontSize = 32.sp)
                     Text(
-                        text = "Checked In!",
+                        text = if (isPhoneConnected) "Checked In!" else "Check-In Queued!",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = NeonGreen
+                        color = if (isPhoneConnected) NeonGreen else NeonGold
                     )
                     Text(
                         text = checkedInVenue ?: "",
                         fontSize = 11.sp,
-                        color = TextSecondary,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextPrimary,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = if (isPhoneConnected) "Location synced to phone" else "Syncs when phone connects",
+                        fontSize = 9.sp,
+                        color = TextMuted,
                         textAlign = TextAlign.Center
                     )
                 }
