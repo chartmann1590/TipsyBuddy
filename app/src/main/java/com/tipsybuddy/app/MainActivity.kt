@@ -20,6 +20,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.tipsybuddy.app.ads.AdMobBanner
+import com.tipsybuddy.app.ads.InterstitialAdManager
+import com.tipsybuddy.app.ads.findActivity
 import com.tipsybuddy.app.data.*
 import com.tipsybuddy.app.ui.screens.*
 import com.tipsybuddy.app.ui.theme.*
@@ -50,7 +53,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Request location permissions if not granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissionLauncher.launch(
                 arrayOf(
@@ -84,11 +86,9 @@ fun MainAppContent(
         SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
     }
 
-    // Collect Room Flows
     val tonightDrinks by db.drinkDao().getDrinksForSession(todayStr).collectAsState(initial = emptyList())
     val allDrinks by db.drinkDao().getAllDrinks().collectAsState(initial = emptyList())
     val latestCheckIn by db.checkInDao().getLatestCheckIn().collectAsState(initial = null)
-
 
     Scaffold(
         bottomBar = {
@@ -109,11 +109,7 @@ fun MainAppContent(
                             )
                         },
                         label = {
-                            Text(
-                                text = screen.title,
-                                fontSize = 10.sp,
-                                maxLines = 1
-                            )
+                            Text(text = screen.title, fontSize = 10.sp, maxLines = 1)
                         },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = NeonGold,
@@ -135,58 +131,70 @@ fun MainAppContent(
         ) {
             when (currentScreen) {
                 AppScreen.TONIGHT -> {
-                    TonightDashboardScreen(
-                        drinks = tonightDrinks,
-                        latestCheckIn = latestCheckIn,
-                        userPrefs = userPrefs,
-                        onAddDrink = { name, category, vol, abv, price ->
-                            coroutineScope.launch {
-                                db.drinkDao().insertDrink(
-                                    DrinkEntity(
-                                        name = name,
-                                        category = category,
-                                        volumeOz = vol,
-                                        abv = abv,
-                                        price = price,
-                                        timestamp = System.currentTimeMillis(),
-                                        sessionDate = todayStr
-                                    )
-                                )
-                                com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
-                            }
-                        },
-                        onNavigateToVenues = { currentScreen = AppScreen.VENUES },
-                        onNavigateToRides = { currentScreen = AppScreen.RIDES },
-                        onNavigateToLog = { currentScreen = AppScreen.LOG }
-                    )
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                            TonightDashboardScreen(
+                                drinks = tonightDrinks,
+                                latestCheckIn = latestCheckIn,
+                                userPrefs = userPrefs,
+                                onAddDrink = { name, category, vol, abv, price ->
+                                    coroutineScope.launch {
+                                        db.drinkDao().insertDrink(
+                                            DrinkEntity(
+                                                name = name,
+                                                category = category,
+                                                volumeOz = vol,
+                                                abv = abv,
+                                                price = price,
+                                                timestamp = System.currentTimeMillis(),
+                                                sessionDate = todayStr
+                                            )
+                                        )
+                                        com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
+                                        InterstitialAdManager.onNaturalMoment(context.findActivity())
+                                    }
+                                },
+                                onNavigateToVenues = { currentScreen = AppScreen.VENUES },
+                                onNavigateToRides = { currentScreen = AppScreen.RIDES },
+                                onNavigateToLog = { currentScreen = AppScreen.LOG }
+                            )
+                        }
+                        AdMobBanner(modifier = Modifier.fillMaxWidth())
+                    }
                 }
 
                 AppScreen.LOG -> {
-                    LogDrinksScreen(
-                        drinks = tonightDrinks,
-                        onAddDrink = { name, category, vol, abv, price ->
-                            coroutineScope.launch {
-                                db.drinkDao().insertDrink(
-                                    DrinkEntity(
-                                        name = name,
-                                        category = category,
-                                        volumeOz = vol,
-                                        abv = abv,
-                                        price = price,
-                                        timestamp = System.currentTimeMillis(),
-                                        sessionDate = todayStr
-                                    )
-                                )
-                                com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
-                            }
-                        },
-                        onDeleteDrink = { drink ->
-                            coroutineScope.launch {
-                                db.drinkDao().deleteDrink(drink)
-                                com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
-                            }
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                            LogDrinksScreen(
+                                drinks = tonightDrinks,
+                                onAddDrink = { name, category, vol, abv, price ->
+                                    coroutineScope.launch {
+                                        db.drinkDao().insertDrink(
+                                            DrinkEntity(
+                                                name = name,
+                                                category = category,
+                                                volumeOz = vol,
+                                                abv = abv,
+                                                price = price,
+                                                timestamp = System.currentTimeMillis(),
+                                                sessionDate = todayStr
+                                            )
+                                        )
+                                        com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
+                                        InterstitialAdManager.onNaturalMoment(context.findActivity())
+                                    }
+                                },
+                                onDeleteDrink = { drink ->
+                                    coroutineScope.launch {
+                                        db.drinkDao().deleteDrink(drink)
+                                        com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
+                                    }
+                                }
+                            )
                         }
-                    )
+                        AdMobBanner(modifier = Modifier.fillMaxWidth())
+                    }
                 }
 
                 AppScreen.CALENDAR -> {

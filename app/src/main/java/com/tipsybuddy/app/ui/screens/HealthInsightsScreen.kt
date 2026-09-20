@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tipsybuddy.app.ads.AdMobBanner
 import com.tipsybuddy.app.data.DrinkEntity
 import com.tipsybuddy.app.data.UserPreferences
 import com.tipsybuddy.app.domain.BacCalculator
@@ -123,7 +124,7 @@ fun HealthInsightsScreen(
                 ) {
                     Text(text = "Standard Drinks Consumed:", fontSize = 12.sp, color = TextSecondary)
                     Text(
-                        text = "${String.format(Locale.US, "%.1f", bacResult.standardDrinks)} units",
+                        text = String.format(Locale.US, "%.1f units", bacResult.standardDrinks),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = NeonGold
@@ -288,6 +289,8 @@ fun HealthInsightsScreen(
                 )
             }
         }
+
+        AdMobBanner(modifier = Modifier.fillMaxWidth())
     }
 }
 
