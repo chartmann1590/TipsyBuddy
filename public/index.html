@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TipsyBuddy - Live Night Out & Safety Tracker</title>
+  
+  <!-- Leaflet CSS for OpenStreetMap (100% free open-source map) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="logo-container">
+      <div class="logo-icon">🍻</div>
+      <div class="logo-text">
+        <span class="brand-title">TipsyBuddy</span>
+        <span class="brand-sub">Live Safe Wingman</span>
+      </div>
+    </div>
+    <div class="header-status" id="headerStatusBadge">
+      <span class="live-dot pulse"></span>
+      <span id="liveStatusText">Connecting...</span>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- View Mode: Active Session Live Tracker -->
+    <section id="sessionView" class="view-section active">
+      <!-- Friend Card Summary -->
+      <div class="user-status-card">
+        <div class="user-info-row">
+          <div class="avatar-box">
+            <span id="userAvatar">🧑‍🎤</span>
+          </div>
+          <div class="user-details">
+            <h2 id="userNameDisplay">Friend's Night Out</h2>
+            <p id="userVenueStatus" class="venue-line">
+              📍 <span id="venueNameDisplay">Searching location...</span>
+            </p>
+          </div>
+          <div class="battery-tag" id="batteryDisplay">
+            🔋 --%
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric-card bac-card">
+            <span class="metric-label">Estimated BAC</span>
+            <div class="bac-display">
+              <span id="bacValue">0.00%</span>
+              <span id="bacZone" class="zone-badge sober">Sober</span>
+            </div>
+            <span class="metric-sub" id="soberCountdown">Normal reflexes</span>
+          </div>
+
+          <div class="metric-card timer-card">
+            <span class="metric-label">Sharing Timer</span>
+            <div class="timer-display">
+              <span id="timerRemaining">--:--</span>
+            </div>
+            <span class="metric-sub" id="expiryLabel">Updates live</span>
+          </div>
+        </div>
+
+        <div class="alert-box" id="safetyAlertBox" style="display: none;">
+          <span class="alert-icon">⚠️</span>
+          <div class="alert-content">
+            <strong>Safety Recommendation</strong>
+            <p id="safetyAlertMessage">Blood alcohol content suggests calling a taxi to get home safely.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Map Section -->
+      <div class="map-card">
+        <div class="map-header">
+          <span class="map-title">Live GPS Location</span>
+          <span class="map-timestamp" id="lastUpdatedTimestamp">Updated just now</span>
+        </div>
+        <div id="liveMap" class="map-canvas"></div>
+        <div class="map-footer">
+          <button id="recenterBtn" class="btn btn-secondary btn-sm">🎯 Recenter on Friend</button>
+          <span id="coordsDisplay" class="coords-text">Lat: --, Lon: --</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons for Friends -->
+      <div class="actions-container">
+        <h3 class="section-title">Help Them Get Home Safe</h3>
+        <div class="ride-buttons-row">
+          <a id="uberLink" href="#" target="_blank" class="btn btn-uber">
+            <span class="btn-icon">🚗</span>
+            <div class="btn-texts">
+              <span class="btn-label">Order Uber</span>
+              <span class="btn-sub">Pickup at their location</span>
+            </div>
+          </a>
+          <a id="lyftLink" href="#" target="_blank" class="btn btn-lyft">
+            <span class="btn-icon">⚡</span>
+            <div class="btn-texts">
+              <span class="btn-label">Order Lyft</span>
+              <span class="btn-sub">Direct destination setup</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="secondary-actions">
+          <a id="callFriendBtn" href="#" class="btn btn-secondary">
+            📞 Call Friend
+          </a>
+          <button id="sendCheerBtn" class="btn btn-secondary">
+            👋 Send "Check In" Wave
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fallback / Home View when no session ID or session not found -->
+    <section id="homeView" class="view-section" style="display: none;">
+      <div class="hero-card">
+        <div class="hero-beer">🍻✨</div>
+        <h1 class="hero-title">TipsyBuddy Companion</h1>
+        <p class="hero-subtitle">
+          Your personal drinking buddy & smart night out wingman. Track your drinks, monitor your estimated BAC, check into bars, and share your live location so friends know you're safe.
+        </p>
+
+        <div class="session-input-card">
+          <h3>Track a Friend's Night Out</h3>
+          <p>Enter the 6-character session ID or link your friend sent you:</p>
+          <div class="input-row">
+            <input type="text" id="sessionInput" placeholder="e.g. tb-a8f3b2" autocomplete="off" />
+            <button id="trackSessionBtn" class="btn btn-primary">Track Live</button>
+          </div>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="f-icon">📊</div>
+            <h4>Widmark BAC Engine</h4>
+            <p>Accurate Blood Alcohol Content estimates based on drink ABV, volume, body weight, and metabolism.</p>
+          </div>
+          <div class="feature-card">
+            <div class="f-icon">📍</div>
+            <h4>Live Safe Share</h4>
+            <p>Share a live map link for 1h, 2h, or all night with friends without any subscription or sign-up needed.</p>
+          </div>
+          <div class="feature-card">
+            <div class="f-icon">🚕</div>
+            <h4>1-Tap Taxi Summon</h4>
+            <p>Proactive taxi alerts when you're getting tipsy, with instant Uber & Lyft ride links straight to your home.</p>
+          </div>
+          <div class="feature-card">
+            <div class="f-icon">📅</div>
+            <h4>Night Out Calendar</h4>
+            <p>Review drinking history, sober streaks, money spent, and hydration balance across every weekend.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Powered by <strong>TipsyBuddy</strong> • Free, Privacy-Focused & OpenStreetMap</p>
+    <p class="disclaimer">BAC calculations are estimates for harm reduction and safety. Always drink responsibly and never drink & drive.</p>
+  </footer>
+
+  <!-- Leaflet JS (Free OpenStreetMap library) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
