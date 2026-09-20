@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.tipsybuddy.app.ads.InterstitialAdManager
+import com.tipsybuddy.app.ads.findActivity
 import com.tipsybuddy.app.data.*
 import com.tipsybuddy.app.ui.screens.*
 import com.tipsybuddy.app.ui.theme.*
@@ -153,6 +155,7 @@ fun MainAppContent(
                                     )
                                 )
                                 com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
+                                InterstitialAdManager.onNaturalMoment(context.findActivity())
                             }
                         },
                         onNavigateToVenues = { currentScreen = AppScreen.VENUES },
@@ -178,6 +181,7 @@ fun MainAppContent(
                                     )
                                 )
                                 com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
+                                InterstitialAdManager.onNaturalMoment(context.findActivity())
                             }
                         },
                         onDeleteDrink = { drink ->
