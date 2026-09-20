@@ -14,6 +14,9 @@ interface CheckInDao {
     @Query("SELECT * FROM check_ins ORDER BY timestamp DESC LIMIT 1")
     fun getLatestCheckIn(): Flow<CheckInEntity?>
 
+    @Query("SELECT * FROM check_ins ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getLatestCheckInDirect(): CheckInEntity?
+
     @Query("SELECT * FROM check_ins WHERE sessionDate = :date ORDER BY timestamp DESC LIMIT 1")
     suspend fun getCheckInForDate(date: String): CheckInEntity?
 

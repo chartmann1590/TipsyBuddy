@@ -36,6 +36,9 @@ firebasePerfPlugin = "2.0.2"
 playServicesAds = "25.4.0"
 userMessagingPlatform = "4.0.0"
 playReview = "2.0.2"
+playServicesWearable = "18.2.0"
+wearCompose = "1.3.1"
+wear = "1.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -80,6 +83,7 @@ litertlm = { group = "com.google.ai.edge.litertlm", name = "litertlm-android", v
 kotlin-metadata-jvm = { group = "org.jetbrains.kotlin", name = "kotlin-metadata-jvm", version.ref = "kotlinMetadata" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
 billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -109,6 +113,13 @@ user-messaging-platform = { group = "com.google.android.ump", name = "user-messa
 
 # Play In-App Review
 play-review-ktx = { group = "com.google.android.play", name = "review-ktx", version.ref = "playReview" }
+
+# Wear OS & Play Services Wearable
+play-services-wearable = { group = "com.google.android.gms", name = "play-services-wearable", version.ref = "playServicesWearable" }
+wear-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "wearCompose" }
+wear-compose-foundation = { group = "androidx.wear.compose", name = "compose-foundation", version.ref = "wearCompose" }
+wear-compose-navigation = { group = "androidx.wear.compose", name = "compose-navigation", version.ref = "wearCompose" }
+androidx-wear = { group = "androidx.wear", name = "wear", version.ref = "wear" }
 
 # Firebase Gradle plugins (classpath resolved via version catalog plugins block)
 

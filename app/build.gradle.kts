@@ -121,6 +121,10 @@ dependencies {
     // OpenStreetMap Android (100% free open-source map)
     implementation("org.osmdroid:osmdroid-android:6.1.18")
 
+    // Wear OS Data Layer Communication
+    implementation(libs.play.services.wearable)
+    implementation(libs.kotlinx.coroutines.play.services)
+
     // Google Mobile Ads (AdMob) — version from gradle/libs.versions.toml
     implementation(libs.play.services.ads)
 }

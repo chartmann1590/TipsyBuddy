@@ -21,13 +21,15 @@ import com.tipsybuddy.app.data.DrinkEntity
 import com.tipsybuddy.app.data.UserPreferences
 import com.tipsybuddy.app.domain.BacCalculator
 import com.tipsybuddy.app.ui.theme.*
+import com.tipsybuddy.app.wear.PhoneWatchVitals
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
 fun HealthInsightsScreen(
     drinks: List<DrinkEntity>,
-    userPrefs: UserPreferences
+    userPrefs: UserPreferences,
+    watchVitals: PhoneWatchVitals = PhoneWatchVitals()
 ) {
     val scrollState = rememberScrollState()
 
@@ -48,6 +50,11 @@ fun HealthInsightsScreen(
         )
     }
 
+    val isReadingFresh = watchVitals.lastSyncedTimestamp > 0L &&
+        (currentTimeMs - watchVitals.lastSyncedTimestamp) < 30 * 60 * 1000L
+    val hasValidLiveHr = watchVitals.heartRateBpm > 0 && isReadingFresh
+    val isLiveTachycardiaRisk = hasValidLiveHr && watchVitals.isTachycardiaRisk
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -56,19 +63,153 @@ fun HealthInsightsScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Header
+        // Top Header
         Column {
             Text(
-                text = "Health & Sobriety Insights",
+                text = "Health Insights & Recovery",
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 color = TextPrimary
             )
             Text(
-                text = "Biometric alcohol tracking & recovery metrics",
+                text = "Track the physiological impact of alcohol on your sleep, metabolism, and heart rate.",
                 fontSize = 12.sp,
                 color = TextSecondary
             )
+        }
+
+        // Wear OS Smartwatch Live Biometrics Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+            border = BorderStroke(
+                1.dp,
+                if (isLiveTachycardiaRisk) CoralRed else CardBorder
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(text = "⌚", fontSize = 16.sp)
+                        Text(
+                            text = "WEAR OS LIVE VITALS",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextMuted,
+                            letterSpacing = 1.sp
+                        )
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (watchVitals.isWatchConnected) Color(0x3310B981) else Color(0x33F59E0B),
+                        border = BorderStroke(1.dp, if (watchVitals.isWatchConnected) NeonGreen else NeonGold)
+                    ) {
+                        Text(
+                            text = if (watchVitals.isWatchConnected) "WATCH PAIRED" else "READY TO SYNC",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (watchVitals.isWatchConnected) NeonGreen else NeonGold
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Heart rate display
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(text = "❤️", fontSize = 16.sp)
+                            Text(
+                                text = if (hasValidLiveHr) "${watchVitals.heartRateBpm} BPM" else "-- BPM",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (isLiveTachycardiaRisk) CoralRed else if (hasValidLiveHr) NeonCyan else TextMuted
+                            )
+                        }
+                        Text(
+                            text = when {
+                                hasValidLiveHr && watchVitals.peakHeartRateBpm > 0 -> "Peak: ${watchVitals.peakHeartRateBpm} BPM"
+                                hasValidLiveHr -> "Active Rate"
+                                watchVitals.heartRateBpm > 0 && !isReadingFresh -> "Reading Stale (>30m)"
+                                watchVitals.isWatchConnected -> "Awaiting Reading..."
+                                else -> "Watch Not Synced"
+                            },
+                            fontSize = 11.sp,
+                            color = TextSecondary
+                        )
+                    }
+
+                    // Night steps walked
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(text = "👟", fontSize = 16.sp)
+                            Text(
+                                text = if (isReadingFresh || watchVitals.stepsTonight > 0) "${watchVitals.stepsTonight}" else "--",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (isReadingFresh || watchVitals.stepsTonight > 0) NeonGold else TextMuted
+                            )
+                        }
+                        Text(
+                            text = if (isReadingFresh || watchVitals.stepsTonight == 0) "Steps Tonight" else "Steps (Historical)",
+                            fontSize = 11.sp,
+                            color = TextSecondary
+                        )
+                    }
+                }
+
+                if (hasValidLiveHr && (watchVitals.isTachycardiaRisk || (bacResult.bac >= 0.05 && watchVitals.heartRateBpm > 85))) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color(0x22EF4444),
+                        border = BorderStroke(1.dp, CoralRed.copy(alpha = 0.5f)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Text(text = "⚠️", fontSize = 14.sp)
+                            Text(
+                                text = "Elevated Heart Rate: Alcohol causes peripheral vasodilation and activates sympathetic cardiac stress. Drink water to ease cardiovascular strain.",
+                                fontSize = 11.sp,
+                                color = Color(0xFFFCA5A5),
+                                lineHeight = 15.sp
+                            )
+                        }
+                    }
+                } else {
+                    Text(
+                        text = "💡 Real-Time Sync: TipsyBuddy Wear streams heart rate, intoxication vitals, and steps from your smartwatch directly to your recovery log.",
+                        fontSize = 11.sp,
+                        color = TextSecondary,
+                        lineHeight = 15.sp
+                    )
+                }
+            }
         }
 
         // Hangover Risk Card
