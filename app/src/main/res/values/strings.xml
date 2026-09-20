@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TipsyBuddy</string>
+    <string name="widget_description">Live BAC monitor and quick drink logger</string>
 </resources>

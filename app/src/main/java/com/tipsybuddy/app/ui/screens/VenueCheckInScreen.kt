@@ -4,7 +4,11 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.location.Geocoder
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.drawable.BitmapDrawable
 import android.location.Location
 import android.location.LocationManager
 import android.widget.Toast
@@ -17,6 +21,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -28,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -36,6 +43,8 @@ import com.tipsybuddy.app.data.DrinkEntity
 import com.tipsybuddy.app.data.FirebaseLiveSync
 import com.tipsybuddy.app.data.UserPreferences
 import com.tipsybuddy.app.domain.BacCalculator
+import com.tipsybuddy.app.domain.VenueLocationResult
+import com.tipsybuddy.app.domain.VenueSearchService
 import com.tipsybuddy.app.ui.theme.*
 import kotlinx.coroutines.launch
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -44,6 +53,64 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import java.text.SimpleDateFormat
 import java.util.*
+
+private fun createVenueMarkerBitmap(context: Context): BitmapDrawable {
+    val density = context.resources.displayMetrics.density
+    val width = (38 * density).toInt().coerceAtLeast(38)
+    val height = (52 * density).toInt().coerceAtLeast(52)
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    // 1. Ground contact shadow
+    paint.color = android.graphics.Color.argb(90, 0, 0, 0)
+    paint.style = Paint.Style.FILL
+    canvas.drawOval(
+        width * 0.2f, height * 0.88f, width * 0.8f, height * 0.99f, paint
+    )
+
+    // 2. Pin body (Teardrop shape)
+    val headRadius = width * 0.44f
+    val centerX = width * 0.5f
+    val centerY = headRadius + (2 * density)
+
+    val pinPath = Path()
+    pinPath.addCircle(centerX, centerY, headRadius, Path.Direction.CW)
+
+    val tipPath = Path()
+    tipPath.moveTo(centerX - headRadius * 0.82f, centerY + headRadius * 0.38f)
+    tipPath.lineTo(centerX + headRadius * 0.82f, centerY + headRadius * 0.38f)
+    tipPath.lineTo(centerX, height * 0.88f)
+    tipPath.close()
+
+    pinPath.op(tipPath, Path.Op.UNION)
+
+    // Fill Pin with Vibrant Red
+    paint.style = Paint.Style.FILL
+    paint.color = android.graphics.Color.parseColor("#E11D48")
+    canvas.drawPath(pinPath, paint)
+
+    // Pin Border (White highlight for crisp contrast against map tiles)
+    paint.style = Paint.Style.STROKE
+    paint.strokeWidth = 2.5f * density
+    paint.color = android.graphics.Color.WHITE
+    canvas.drawPath(pinPath, paint)
+
+    // 3. Inner circle (White circle)
+    paint.style = Paint.Style.FILL
+    paint.color = android.graphics.Color.WHITE
+    val innerRadius = headRadius * 0.52f
+    canvas.drawCircle(centerX, centerY, innerRadius, paint)
+
+    // 4. Center Gold core
+    paint.color = android.graphics.Color.parseColor("#F59E0B")
+    canvas.drawCircle(centerX, centerY, innerRadius * 0.65f, paint)
+
+    val drawable = BitmapDrawable(context.resources, bitmap)
+    drawable.setBounds(0, 0, width, height)
+    return drawable
+}
 
 @Composable
 fun VenueCheckInScreen(
@@ -56,10 +123,16 @@ fun VenueCheckInScreen(
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
+    val searchService = remember { VenueSearchService() }
+    var searchQuery by remember { mutableStateOf("") }
+    var searchResults by remember { mutableStateOf<List<VenueLocationResult>>(emptyList()) }
+    var isSearching by remember { mutableStateOf(false) }
+    var searchStatus by remember { mutableStateOf<String?>(null) }
+
     var venueNameInput by remember { mutableStateOf(latestCheckIn?.venueName ?: "") }
     var currentLat by remember { mutableDoubleStateOf(latestCheckIn?.latitude ?: 0.0) }
     var currentLon by remember { mutableDoubleStateOf(latestCheckIn?.longitude ?: 0.0) }
-    var detectedAddress by remember { mutableStateOf(latestCheckIn?.address ?: "Tap 'Use GPS' or enter a venue below") }
+    var detectedAddress by remember { mutableStateOf(latestCheckIn?.address ?: "Search a venue or tap 'Use GPS' below") }
     var isLocating by remember { mutableStateOf(false) }
 
     var isLiveSharing by remember { mutableStateOf(userPrefs.isLiveSharing) }
@@ -79,45 +152,56 @@ fun VenueCheckInScreen(
 
     val liveShareUrl = "https://tipsybuddy.web.app/?session=${userPrefs.liveSessionId}"
 
+    fun performSearch(queryText: String) {
+        val trimmed = queryText.trim()
+        if (trimmed.isBlank()) return
+        isSearching = true
+        searchStatus = null
+        coroutineScope.launch {
+            try {
+                val results = searchService.search(trimmed, context)
+                searchResults = results
+                if (results.isEmpty()) {
+                    searchStatus = "No matching venues or addresses found. Try a different search."
+                }
+            } catch (e: Exception) {
+                searchStatus = "Search failed: ${e.message}"
+            } finally {
+                isSearching = false
+            }
+        }
+    }
+
     // Function to acquire location and reverse geocode
     fun detectLocation() {
         isLocating = true
-        try {
-            val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            var loc: Location? = null
-            if (context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                loc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                    ?: lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-            }
-
-            if (loc != null) {
-                currentLat = loc.latitude
-                currentLon = loc.longitude
-                try {
-                    val geocoder = Geocoder(context, Locale.getDefault())
-                    val addresses = geocoder.getFromLocation(loc.latitude, loc.longitude, 1)
-                    if (!addresses.isNullOrEmpty()) {
-                        val addr = addresses[0]
-                        val thoroughfare = addr.thoroughfare ?: addr.featureName ?: ""
-                        val locality = addr.locality ?: addr.subAdminArea ?: ""
-                        detectedAddress = if (thoroughfare.isNotBlank() && locality.isNotBlank()) "$thoroughfare, $locality"
-                            else thoroughfare.ifBlank { locality.ifBlank { "Coordinates: ${String.format(Locale.US, "%.4f, %.4f", currentLat, currentLon)}" } }
-                        if (venueNameInput.isBlank()) {
-                            venueNameInput = addr.featureName ?: "Local Venue"
-                        }
-                    }
-                } catch (e: Exception) {
-                    detectedAddress = "Coordinates: ${String.format(Locale.US, "%.4f, %.4f", currentLat, currentLon)}"
+        coroutineScope.launch {
+            try {
+                val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                var loc: Location? = null
+                if (context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    loc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                        ?: lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
                 }
-                Toast.makeText(context, "📍 GPS Location acquired!", Toast.LENGTH_SHORT).show()
-            } else {
-                detectedAddress = "GPS location unavailable. Please ensure location is enabled."
-                Toast.makeText(context, "Could not acquire GPS fix. Please check location settings.", Toast.LENGTH_SHORT).show()
+
+                if (loc != null) {
+                    currentLat = loc.latitude
+                    currentLon = loc.longitude
+                    val place = searchService.reverseGeocode(loc.latitude, loc.longitude, context)
+                    detectedAddress = place.address
+                    if (venueNameInput.isBlank() || venueNameInput.matches(Regex("^\\d+$"))) {
+                        venueNameInput = place.title
+                    }
+                    Toast.makeText(context, "📍 GPS Location acquired!", Toast.LENGTH_SHORT).show()
+                } else {
+                    detectedAddress = "GPS location unavailable. Please ensure location is enabled."
+                    Toast.makeText(context, "Could not acquire GPS fix. Please check location settings.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Location error: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                isLocating = false
             }
-        } catch (e: Exception) {
-            Toast.makeText(context, "Location error: ${e.message}", Toast.LENGTH_SHORT).show()
-        } finally {
-            isLocating = false
         }
     }
 
@@ -406,7 +490,157 @@ fun VenueCheckInScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "CHECK IN TO BAR OR VENUE",
+                    text = "SEARCH VENUE OR ADDRESS",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextMuted,
+                    letterSpacing = 1.sp
+                )
+
+                // Search Bar Field
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = {
+                        searchQuery = it
+                        if (it.isBlank()) {
+                            searchResults = emptyList()
+                            searchStatus = null
+                        }
+                    },
+                    label = { Text("Search Bar, Venue or Address") },
+                    placeholder = { Text("e.g. Frog Alley, 108 State St, The Bier Abbey...") },
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search", tint = NeonGold)
+                    },
+                    trailingIcon = {
+                        if (isSearching) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = NeonGold,
+                                strokeWidth = 2.dp
+                            )
+                        } else if (searchQuery.isNotBlank()) {
+                            IconButton(onClick = {
+                                searchQuery = ""
+                                searchResults = emptyList()
+                                searchStatus = null
+                            }) {
+                                Icon(imageVector = Icons.Default.Close, contentDescription = "Clear", tint = TextSecondary)
+                            }
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { performSearch(searchQuery) }),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        focusedBorderColor = NeonGold,
+                        unfocusedBorderColor = CardBorder
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Search Action Button Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Button(
+                        onClick = { performSearch(searchQuery) },
+                        enabled = searchQuery.isNotBlank() && !isSearching,
+                        colors = ButtonDefaults.buttonColors(containerColor = NeonGold),
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Search Address", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
+                }
+
+                // Search Results Dropdown List
+                if (searchResults.isNotEmpty()) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF0F172A),
+                        border = BorderStroke(1.dp, CardBorder),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "SELECT MATCHING VENUE (${searchResults.size})",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = NeonGreen,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                            searchResults.forEach { result ->
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color(0xFF161F33),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            venueNameInput = result.title
+                                            detectedAddress = result.address
+                                            currentLat = result.latitude
+                                            currentLon = result.longitude
+                                            searchResults = emptyList()
+                                            searchQuery = result.title
+                                            searchStatus = null
+                                            Toast.makeText(context, "📍 Selected ${result.title}", Toast.LENGTH_SHORT).show()
+                                        }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Place,
+                                            contentDescription = null,
+                                            tint = NeonCyan,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = result.title,
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = TextPrimary,
+                                                maxLines = 1
+                                            )
+                                            Text(
+                                                text = result.address,
+                                                fontSize = 11.sp,
+                                                color = TextSecondary,
+                                                maxLines = 2
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (searchStatus != null) {
+                    Text(
+                        text = searchStatus!!,
+                        fontSize = 12.sp,
+                        color = AmberGlow,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                }
+
+                HorizontalDivider(color = CardBorder, modifier = Modifier.padding(vertical = 4.dp))
+
+                Text(
+                    text = "CHECK IN DETAILS",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextMuted,
@@ -465,7 +699,7 @@ fun VenueCheckInScreen(
                     Button(
                         onClick = {
                             val finalVenue = venueNameInput.ifBlank { "Night Out Venue" }
-                            val finalAddress = if (detectedAddress.startsWith("Tap 'Use GPS'")) "Current Location" else detectedAddress
+                            val finalAddress = if (detectedAddress.startsWith("Search a venue") || detectedAddress.startsWith("Tap 'Use GPS'")) "Current Location" else detectedAddress
                             onSaveCheckIn(finalVenue, finalAddress, currentLat, currentLon)
                             if (isLiveSharing) {
                                 syncToFirebase()
@@ -480,11 +714,32 @@ fun VenueCheckInScreen(
                     }
                 }
 
-                Text(
-                    text = "📍 $detectedAddress",
-                    fontSize = 11.sp,
-                    color = TextSecondary
-                )
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color(0xFF0C1220),
+                    border = BorderStroke(1.dp, CardBorder),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Icon(imageVector = Icons.Default.Place, contentDescription = null, tint = CoralRed, modifier = Modifier.size(16.dp))
+                            Text(
+                                text = detectedAddress,
+                                fontSize = 12.sp,
+                                color = TextPrimary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        if (currentLat != 0.0 && currentLon != 0.0) {
+                            Text(
+                                text = "Coordinates: ${String.format(Locale.US, "%.5f, %.5f", currentLat, currentLon)}",
+                                fontSize = 10.sp,
+                                color = TextMuted,
+                                modifier = Modifier.padding(start = 22.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -492,7 +747,7 @@ fun VenueCheckInScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(260.dp),
+                .height(300.dp),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = SurfaceDark),
             border = BorderStroke(1.dp, CardBorder)
@@ -505,13 +760,16 @@ fun VenueCheckInScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "OPENSTREETMAP LIVE PIN",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextMuted,
-                        letterSpacing = 1.sp
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(imageVector = Icons.Default.LocationOn, contentDescription = null, tint = CoralRed, modifier = Modifier.size(16.dp))
+                        Text(
+                            text = "OPENSTREETMAP LIVE PIN",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextMuted,
+                            letterSpacing = 1.sp
+                        )
+                    }
                     Text(
                         text = "100% Free & Open Source",
                         fontSize = 10.sp,
@@ -525,17 +783,25 @@ fun VenueCheckInScreen(
                         MapView(ctx).apply {
                             setTileSource(TileSourceFactory.MAPNIK)
                             setMultiTouchControls(true)
+                            isTilesScaledToDpi = true
+                            onResume()
                             if (currentLat != 0.0 && currentLon != 0.0) {
-                                controller.setZoom(16.0)
                                 val geoPoint = GeoPoint(currentLat, currentLon)
-                                controller.setCenter(geoPoint)
-                                val marker = Marker(this)
-                                marker.position = geoPoint
-                                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                                marker.title = venueNameInput.ifBlank { "TipsyBuddy Location" }
+                                val marker = Marker(this).apply {
+                                    position = geoPoint
+                                    icon = createVenueMarkerBitmap(ctx)
+                                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                    title = venueNameInput.ifBlank { "Venue Location" }
+                                    snippet = detectedAddress
+                                }
                                 overlays.add(marker)
+                                post {
+                                    controller.setZoom(16.5)
+                                    controller.setCenter(geoPoint)
+                                    marker.showInfoWindow()
+                                }
                             } else {
-                                controller.setZoom(3.5)
+                                controller.setZoom(4.0)
                                 controller.setCenter(GeoPoint(39.8283, -98.5795))
                             }
                         }
@@ -544,13 +810,19 @@ fun VenueCheckInScreen(
                         view.overlays.clear()
                         if (currentLat != 0.0 && currentLon != 0.0) {
                             val geoPoint = GeoPoint(currentLat, currentLon)
-                            view.controller.setCenter(geoPoint)
-                            view.controller.setZoom(16.0)
-                            val marker = Marker(view)
-                            marker.position = geoPoint
-                            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                            marker.title = venueNameInput.ifBlank { "TipsyBuddy Location" }
+                            val marker = Marker(view).apply {
+                                position = geoPoint
+                                icon = createVenueMarkerBitmap(view.context)
+                                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                title = venueNameInput.ifBlank { "Venue Location" }
+                                snippet = detectedAddress
+                            }
                             view.overlays.add(marker)
+                            view.post {
+                                view.controller.setZoom(16.5)
+                                view.controller.animateTo(geoPoint)
+                                marker.showInfoWindow()
+                            }
                         }
                         view.invalidate()
                     }

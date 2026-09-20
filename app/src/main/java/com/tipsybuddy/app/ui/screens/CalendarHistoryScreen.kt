@@ -76,7 +76,7 @@ fun CalendarHistoryScreen(
     }
 
     val monthlyDrinkingDays = remember(monthlyDrinks) {
-        monthlyDrinks.filter { it.category != "Water" }.map { it.sessionDate }.distinct().size
+        monthlyDrinks.filter { it.isAlcoholic }.map { it.sessionDate }.distinct().size
     }
 
     val monthlyTotalSpent = remember(monthlyDrinks) {
@@ -228,7 +228,7 @@ fun CalendarHistoryScreen(
                             } else {
                                 val dayNum = dateStr.split("-").lastOrNull()?.toIntOrNull() ?: 1
                                 val drinksOnDate = drinksByDate[dateStr] ?: emptyList()
-                                val alcoholCount = drinksOnDate.filter { it.category != "Water" }.size
+                                val alcoholCount = drinksOnDate.count { it.isAlcoholic }
                                 val isSelected = dateStr == selectedDateStr
 
                                 val dotColor = when {
@@ -319,7 +319,7 @@ fun CalendarHistoryScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Total Drinks", fontSize = 11.sp, color = TextMuted)
                         Text(
-                            text = "${selectedDateDrinks.filter { it.category != "Water" }.size}",
+                            text = "${selectedDateDrinks.count { it.isAlcoholic }}",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = NeonGold
@@ -371,12 +371,13 @@ fun CalendarHistoryScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                val emoji = when (drink.category) {
-                                    "Beer" -> "🍺"
-                                    "Wine" -> "🍷"
-                                    "Cocktail" -> "🍸"
-                                    "Shot" -> "🍋"
-                                    "Water" -> "💧"
+                                val emoji = when {
+                                    drink.isWater -> "💧"
+                                    drink.category.contains("Beer", ignoreCase = true) -> "🍺"
+                                    drink.category.contains("Wine", ignoreCase = true) -> "🍷"
+                                    drink.category.contains("Cocktail", ignoreCase = true) -> "🍸"
+                                    drink.category.contains("Shot", ignoreCase = true) -> "🍋"
+                                    drink.category.contains("Seltzer", ignoreCase = true) -> "🥤"
                                     else -> "🍹"
                                 }
                                 Text(text = emoji, fontSize = 18.sp)

@@ -42,19 +42,75 @@ data class DrinkPreset(
 
 object BacCalculator {
 
-    val POPULAR_PRESETS = listOf(
-        DrinkPreset("Draft Beer", "Beer", 12.0, 5.0, 7.00, "🍺"),
-        DrinkPreset("Craft IPA", "Beer", 16.0, 6.8, 9.00, "🍻"),
-        DrinkPreset("Red Wine", "Wine", 5.0, 13.0, 12.00, "🍷"),
-        DrinkPreset("White Wine", "Wine", 5.0, 12.0, 11.00, "🥂"),
-        DrinkPreset("Margarita", "Cocktail", 6.0, 15.0, 14.00, "🍸"),
-        DrinkPreset("Old Fashioned", "Cocktail", 3.5, 32.0, 15.00, "🥃"),
-        DrinkPreset("Long Island", "Cocktail", 8.0, 22.0, 16.00, "🍹"),
-        DrinkPreset("Tequila Shot", "Shot", 1.5, 40.0, 8.00, "🍋"),
-        DrinkPreset("Whiskey Shot", "Shot", 1.5, 40.0, 9.00, "🥃"),
-        DrinkPreset("Hard Seltzer", "Seltzer", 12.0, 5.0, 6.50, "🥤"),
-        DrinkPreset("Glass of Water", "Water", 12.0, 0.0, 0.00, "💧")
+    val BUILT_IN_CATALOG = listOf(
+        // Domestic Beers
+        DrinkPreset("Bud Light", "Domestic Beer", 12.0, 4.2, 5.50, "🍺"),
+        DrinkPreset("Coors Light", "Domestic Beer", 12.0, 4.2, 5.50, "🍺"),
+        DrinkPreset("Miller Lite", "Domestic Beer", 12.0, 4.2, 5.50, "🍺"),
+        DrinkPreset("Michelob Ultra", "Domestic Beer", 12.0, 4.2, 6.00, "🍺"),
+        DrinkPreset("Pabst Blue Ribbon (PBR)", "Domestic Beer", 12.0, 4.8, 4.50, "🍺"),
+        DrinkPreset("Yuengling Traditional", "Domestic Beer", 12.0, 4.5, 5.50, "🍺"),
+
+        // Imported Beers
+        DrinkPreset("Corona Extra", "Import Beer", 12.0, 4.6, 7.00, "🍺"),
+        DrinkPreset("Heineken Lager", "Import Beer", 12.0, 5.0, 7.00, "🍺"),
+        DrinkPreset("Stella Artois", "Import Beer", 11.2, 5.0, 7.50, "🍺"),
+        DrinkPreset("Guinness Draught", "Import Beer", 16.0, 4.2, 8.50, "🍻"),
+        DrinkPreset("Modelo Especial", "Import Beer", 12.0, 4.4, 7.00, "🍺"),
+        DrinkPreset("Dos Equis (XX)", "Import Beer", 12.0, 4.2, 6.50, "🍺"),
+        DrinkPreset("Blue Moon Belgian White", "Import Beer", 12.0, 5.4, 7.00, "🍺"),
+
+        // Craft Beers & Cider
+        DrinkPreset("Hazy IPA", "Craft Beer", 16.0, 6.8, 8.50, "🍻"),
+        DrinkPreset("Double IPA (DIPA)", "Craft Beer", 12.0, 8.2, 9.50, "🍻"),
+        DrinkPreset("Craft Stout / Porter", "Craft Beer", 16.0, 6.0, 8.50, "🍻"),
+        DrinkPreset("Hard Apple Cider", "Craft Beer", 12.0, 5.0, 6.50, "🍏"),
+
+        // Basic Mixed Drinks
+        DrinkPreset("Vodka Soda", "Mixed Drinks", 6.0, 12.0, 10.00, "🍸"),
+        DrinkPreset("Gin & Tonic", "Mixed Drinks", 6.0, 11.0, 10.00, "🍸"),
+        DrinkPreset("Rum & Coke", "Mixed Drinks", 6.0, 12.0, 10.00, "🍹"),
+        DrinkPreset("Whiskey Ginger / Highball", "Mixed Drinks", 6.0, 12.0, 10.00, "🥃"),
+        DrinkPreset("Tequila Soda & Lime", "Mixed Drinks", 6.0, 12.0, 10.00, "🍸"),
+        DrinkPreset("Vodka Cranberry", "Mixed Drinks", 6.0, 11.0, 10.00, "🍸"),
+
+        // Classic Cocktails
+        DrinkPreset("Classic Margarita", "Cocktails", 6.0, 15.0, 13.00, "🍸"),
+        DrinkPreset("Moscow Mule", "Cocktails", 6.0, 12.0, 12.00, "🍹"),
+        DrinkPreset("Old Fashioned", "Cocktails", 3.5, 32.0, 14.00, "🥃"),
+        DrinkPreset("Espresso Martini", "Cocktails", 4.0, 20.0, 15.00, "🍸"),
+        DrinkPreset("Aperol Spritz", "Cocktails", 6.0, 11.0, 13.00, "🥂"),
+        DrinkPreset("Long Island Iced Tea", "Cocktails", 8.0, 22.0, 15.00, "🍹"),
+        DrinkPreset("Mojito", "Cocktails", 7.0, 12.0, 12.00, "🌿"),
+
+        // Hard Seltzers
+        DrinkPreset("White Claw Hard Seltzer", "Seltzers", 12.0, 5.0, 6.50, "🥤"),
+        DrinkPreset("Truly Hard Seltzer", "Seltzers", 12.0, 5.0, 6.50, "🥤"),
+        DrinkPreset("High Noon Sun Sips", "Seltzers", 12.0, 4.5, 8.00, "🥤"),
+        DrinkPreset("Twisted Tea", "Seltzers", 12.0, 5.0, 6.00, "🥤"),
+
+        // Shots
+        DrinkPreset("Tequila Shot (Blanco)", "Shots", 1.5, 40.0, 8.00, "🍋"),
+        DrinkPreset("Vodka Shot", "Shots", 1.5, 40.0, 7.50, "🍋"),
+        DrinkPreset("Whiskey / Bourbon Shot", "Shots", 1.5, 40.0, 8.00, "🥃"),
+        DrinkPreset("Fireball Cinnamon Shot", "Shots", 1.5, 33.0, 6.00, "🔥"),
+        DrinkPreset("Jägerbomb", "Shots", 4.0, 18.0, 9.00, "💣"),
+        DrinkPreset("Green Tea Shot", "Shots", 2.0, 15.0, 8.50, "🍵"),
+
+        // Wine & Bubbles
+        DrinkPreset("Red Wine (Cabernet/Pinot)", "Wine", 5.0, 13.5, 11.00, "🍷"),
+        DrinkPreset("White Wine (Chardonnay/Sauv)", "Wine", 5.0, 12.5, 11.00, "🥂"),
+        DrinkPreset("Prosecco / Champagne", "Wine", 5.0, 12.0, 12.00, "🍾"),
+        DrinkPreset("Rosé Wine", "Wine", 5.0, 12.5, 10.50, "🍷"),
+
+        // Water & Recovery
+        DrinkPreset("Pint of Ice Water", "Water", 16.0, 0.0, 0.00, "💧"),
+        DrinkPreset("Club Soda with Lime", "Water", 12.0, 0.0, 2.00, "🫧"),
+        DrinkPreset("Liquid Death Sparkling", "Water", 16.0, 0.0, 3.50, "💧"),
+        DrinkPreset("Electrolyte Sports Drink", "Water", 16.0, 0.0, 3.50, "⚡")
     )
+
+    val POPULAR_PRESETS = BUILT_IN_CATALOG
 
     fun calculate(
         drinks: List<DrinkEntity>,
@@ -77,8 +133,8 @@ object BacCalculator {
             )
         }
 
-        val alcoholDrinks = drinks.filter { it.category != "Water" && it.abv > 0.0 }
-        val waterDrinks = drinks.filter { it.category == "Water" || it.abv == 0.0 }
+        val alcoholDrinks = drinks.filter { it.isAlcoholic }
+        val waterDrinks = drinks.filter { it.isWater }
 
         val waterCount = waterDrinks.size
         val alcoholCount = alcoholDrinks.size
