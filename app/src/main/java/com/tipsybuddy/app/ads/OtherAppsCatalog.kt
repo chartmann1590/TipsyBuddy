@@ -68,6 +68,14 @@ object OtherAppsCatalog {
             packageId = "com.charles.virtualpet.fishtank",
             githubUrl = "https://github.com/chartmann1590/Pixel-Fish-Tank",
             playSearchQuery = "Pixel Fish Tank"
+        ),
+        OtherApp(
+            name = "Ollama Chat",
+            tagline = "Chat with Ollama or run LLMs fully on-device. Private, no server required",
+            emoji = "💬",
+            packageId = "com.charles.ollama.client",
+            githubUrl = "https://github.com/chartmann1590/ollama-android-client",
+            playSearchQuery = "Ollama Chat"
         )
     )
 
