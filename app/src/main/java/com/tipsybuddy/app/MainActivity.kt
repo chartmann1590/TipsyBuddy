@@ -2,6 +2,7 @@ package com.tipsybuddy.app
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -52,14 +53,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Request location permissions if not granted
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
+        // Request runtime permissions if not granted (Location & Android 13+ Notifications)
+        val permissionsToRequest = mutableListOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        val missingPermissions = permissionsToRequest.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+        if (missingPermissions.isNotEmpty()) {
+            requestPermissionLauncher.launch(missingPermissions.toTypedArray())
         }
 
         val db = AppDatabase.getInstance(this)
@@ -95,7 +101,16 @@ fun MainAppContent(
     val wearSyncManager = remember { PhoneWearSyncManager.getInstance(context) }
     val watchVitals by wearSyncManager.watchVitals.collectAsState()
 
-    LaunchedEffect(tonightDrinks, latestCheckIn) {
+    // Periodic time ticker to continuously recalculate and push metabolized BAC & sobriety countdown
+    var currentTimeMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(30000)
+            currentTimeMs = System.currentTimeMillis()
+        }
+    }
+
+    LaunchedEffect(tonightDrinks, latestCheckIn, currentTimeMs) {
         val bacResult = BacCalculator.calculate(
             drinks = tonightDrinks,
             weightLbs = userPrefs.weightLbs,

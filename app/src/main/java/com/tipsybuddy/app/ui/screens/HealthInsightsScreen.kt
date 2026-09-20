@@ -49,6 +49,11 @@ fun HealthInsightsScreen(
         )
     }
 
+    val isReadingFresh = watchVitals.lastSyncedTimestamp > 0L &&
+        (currentTimeMs - watchVitals.lastSyncedTimestamp) < 30 * 60 * 1000L
+    val hasValidLiveHr = watchVitals.heartRateBpm > 0 && isReadingFresh
+    val isLiveTachycardiaRisk = hasValidLiveHr && watchVitals.isTachycardiaRisk
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -57,16 +62,16 @@ fun HealthInsightsScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Header
+        // Top Header
         Column {
             Text(
-                text = "Health & Sobriety Insights",
+                text = "Health Insights & Recovery",
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
                 color = TextPrimary
             )
             Text(
-                text = "Biometric alcohol tracking & recovery metrics",
+                text = "Track the physiological impact of alcohol on your sleep, metabolism, and heart rate.",
                 fontSize = 12.sp,
                 color = TextSecondary
             )
@@ -79,7 +84,7 @@ fun HealthInsightsScreen(
             colors = CardDefaults.cardColors(containerColor = SurfaceDark),
             border = BorderStroke(
                 1.dp,
-                if (watchVitals.isTachycardiaRisk) CoralRed else CardBorder
+                if (isLiveTachycardiaRisk) CoralRed else CardBorder
             )
         ) {
             Column(
@@ -133,16 +138,17 @@ fun HealthInsightsScreen(
                         ) {
                             Text(text = "❤️", fontSize = 16.sp)
                             Text(
-                                text = if (watchVitals.heartRateBpm > 0) "${watchVitals.heartRateBpm} BPM" else "-- BPM",
+                                text = if (hasValidLiveHr) "${watchVitals.heartRateBpm} BPM" else "-- BPM",
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = if (watchVitals.heartRateBpm > 0 && watchVitals.isTachycardiaRisk) CoralRed else if (watchVitals.heartRateBpm > 0) NeonCyan else TextMuted
+                                color = if (isLiveTachycardiaRisk) CoralRed else if (hasValidLiveHr) NeonCyan else TextMuted
                             )
                         }
                         Text(
                             text = when {
-                                watchVitals.heartRateBpm > 0 && watchVitals.peakHeartRateBpm > 0 -> "Peak: ${watchVitals.peakHeartRateBpm} BPM"
-                                watchVitals.heartRateBpm > 0 -> "Active Rate"
+                                hasValidLiveHr && watchVitals.peakHeartRateBpm > 0 -> "Peak: ${watchVitals.peakHeartRateBpm} BPM"
+                                hasValidLiveHr -> "Active Rate"
+                                watchVitals.heartRateBpm > 0 && !isReadingFresh -> "Reading Stale (>30m)"
                                 watchVitals.isWatchConnected -> "Awaiting Reading..."
                                 else -> "Watch Not Synced"
                             },
@@ -159,21 +165,21 @@ fun HealthInsightsScreen(
                         ) {
                             Text(text = "👟", fontSize = 16.sp)
                             Text(
-                                text = "${watchVitals.stepsTonight}",
+                                text = if (isReadingFresh || watchVitals.stepsTonight > 0) "${watchVitals.stepsTonight}" else "--",
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = NeonGold
+                                color = if (isReadingFresh || watchVitals.stepsTonight > 0) NeonGold else TextMuted
                             )
                         }
                         Text(
-                            text = "Steps Tonight",
+                            text = if (isReadingFresh || watchVitals.stepsTonight == 0) "Steps Tonight" else "Steps (Historical)",
                             fontSize = 11.sp,
                             color = TextSecondary
                         )
                     }
                 }
 
-                if (watchVitals.heartRateBpm > 0 && (watchVitals.isTachycardiaRisk || (bacResult.bac >= 0.05 && watchVitals.heartRateBpm > 85))) {
+                if (hasValidLiveHr && (watchVitals.isTachycardiaRisk || (bacResult.bac >= 0.05 && watchVitals.heartRateBpm > 85))) {
                     Surface(
                         shape = RoundedCornerShape(10.dp),
                         color = Color(0x22EF4444),

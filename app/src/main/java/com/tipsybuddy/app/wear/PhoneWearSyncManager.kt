@@ -80,6 +80,18 @@ class PhoneWearSyncManager private constructor(private val context: Context) :
         // Dynamic registration of messageClient and dataClient is omitted to avoid duplicate execution.
         capabilityClient.addListener(this, CAPABILITY_WATCH_APP)
         checkWatchConnected()
+        startPeriodicStateSync()
+    }
+
+    private fun startPeriodicStateSync() {
+        scope.launch {
+            while (true) {
+                kotlinx.coroutines.delay(60000L) // Refresh every minute
+                if (_watchVitals.value.isWatchConnected) {
+                    pushLatestStateToWatch()
+                }
+            }
+        }
     }
 
     fun checkWatchConnected() {
@@ -115,8 +127,9 @@ class PhoneWearSyncManager private constructor(private val context: Context) :
                         val volumeOz = (map["volumeOz"] as? Number)?.toDouble() ?: 12.0
                         val abv = (map["abv"] as? Number)?.toDouble() ?: 5.0
                         val price = (map["price"] as? Number)?.toDouble() ?: 0.0
+                        val timestamp = (map["timestamp"] as? Number)?.toLong() ?: System.currentTimeMillis()
 
-                        val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                        val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(timestamp))
                         val db = AppDatabase.getInstance(context)
                         db.drinkDao().insertDrink(
                             DrinkEntity(
@@ -125,7 +138,7 @@ class PhoneWearSyncManager private constructor(private val context: Context) :
                                 volumeOz = volumeOz,
                                 abv = abv,
                                 price = price,
-                                timestamp = System.currentTimeMillis(),
+                                timestamp = timestamp,
                                 sessionDate = todayStr
                             )
                         )
@@ -144,13 +157,15 @@ class PhoneWearSyncManager private constructor(private val context: Context) :
 
                         val venueName = map["venueName"]?.toString() ?: "Venue"
                         val address = map["address"]?.toString() ?: ""
+                        val timestamp = (map["timestamp"] as? Number)?.toLong() ?: System.currentTimeMillis()
 
-                        val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                        val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(timestamp))
                         val db = AppDatabase.getInstance(context)
                         db.checkInDao().insertCheckIn(
                             CheckInEntity(
                                 venueName = venueName,
                                 address = address,
+                                timestamp = timestamp,
                                 sessionDate = todayStr
                             )
                         )
@@ -158,7 +173,11 @@ class PhoneWearSyncManager private constructor(private val context: Context) :
                     }
 
                     PATH_REQUEST_RIDE -> {
-                        val actionId = "${messageEvent.sourceNodeId}_${messageEvent.requestId}"
+                        val json = String(messageEvent.data, Charsets.UTF_8)
+                        val map = try {
+                            gson.fromJson(json, Map::class.java)
+                        } catch (_: Exception) { null }
+                        val actionId = map?.get("actionId")?.toString() ?: "${messageEvent.sourceNodeId}_${messageEvent.requestId}"
                         if (isAlreadyProcessed(actionId)) {
                             Log.d(TAG, "Duplicate ride request ignored: $actionId")
                             return@launch
@@ -189,17 +208,18 @@ class PhoneWearSyncManager private constructor(private val context: Context) :
                         val isTachycardia = dataMap.getBoolean("tachycardia_risk", false)
                         val timestamp = dataMap.getLong("timestamp", System.currentTimeMillis())
 
+                        val isStale = (System.currentTimeMillis() - timestamp) > STALE_VITALS_EXPIRATION_MS
                         val newVitals = PhoneWatchVitals(
-                            heartRateBpm = hr,
-                            peakHeartRateBpm = peak,
-                            stepsTonight = steps,
-                            isTachycardiaRisk = isTachycardia,
+                            heartRateBpm = if (isStale) 0 else hr,
+                            peakHeartRateBpm = if (isStale) 0 else peak,
+                            stepsTonight = if (isStale) 0 else steps,
+                            isTachycardiaRisk = if (isStale) false else isTachycardia,
                             lastSyncedTimestamp = timestamp,
                             isWatchConnected = true
                         )
                         _watchVitals.value = newVitals
                         saveCachedVitals(newVitals)
-                        Log.d(TAG, "Received watch health vitals: HR=$hr, Steps=$steps")
+                        Log.d(TAG, "Received watch health vitals: HR=$hr, Steps=$steps, isStale=$isStale")
                     }
 
                     path.startsWith(PATH_ACTIONS_PREFIX) -> {
@@ -273,6 +293,7 @@ class PhoneWearSyncManager private constructor(private val context: Context) :
                     CheckInEntity(
                         venueName = venueName,
                         address = address,
+                        timestamp = timestamp,
                         sessionDate = todayStr
                     )
                 )
@@ -432,12 +453,21 @@ class PhoneWearSyncManager private constructor(private val context: Context) :
 
     private fun loadCachedVitals(): PhoneWatchVitals {
         val prefs = context.getSharedPreferences("wear_vitals_cache", Context.MODE_PRIVATE)
+        val timestamp = prefs.getLong("timestamp", 0L)
+        val isStale = (System.currentTimeMillis() - timestamp) > STALE_VITALS_EXPIRATION_MS
+        if (isStale) {
+            return PhoneWatchVitals(
+                lastSyncedTimestamp = timestamp,
+                isWatchConnected = false
+            )
+        }
         return PhoneWatchVitals(
             heartRateBpm = prefs.getInt("hr", 0),
             peakHeartRateBpm = prefs.getInt("peak_hr", 0),
             stepsTonight = prefs.getInt("steps", 0),
             isTachycardiaRisk = prefs.getBoolean("tachycardia", false),
-            lastSyncedTimestamp = prefs.getLong("timestamp", 0L)
+            lastSyncedTimestamp = timestamp,
+            isWatchConnected = false
         )
     }
 
@@ -445,6 +475,7 @@ class PhoneWearSyncManager private constructor(private val context: Context) :
         private const val TAG = "PhoneWearSync"
         private const val RIDE_NOTIFICATION_ID = 4040
         private const val CHANNEL_RIDE_REQUESTS = "ride_requests_channel"
+        const val STALE_VITALS_EXPIRATION_MS = 30 * 60 * 1000L // 30 minutes
         const val CAPABILITY_WATCH_APP = "tipsy_buddy_watch"
         const val PATH_SESSION_STATE = "/tipsy/session_state"
         const val PATH_HEALTH_STATS = "/tipsy/health_stats"
