@@ -173,7 +173,12 @@
     },
     reset: function () {
       clearConsent();
-      setBannerVisible(document.getElementById("cookieBanner"), true);
+      updateSettingsStatus();
+      var banner = document.getElementById("cookieBanner");
+      setBannerVisible(banner, true);
+      if (banner) {
+        banner.scrollIntoView({ block: "nearest" });
+      }
     }
   };
 })();
