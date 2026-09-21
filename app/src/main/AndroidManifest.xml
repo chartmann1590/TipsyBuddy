@@ -67,10 +67,13 @@
         <!-- Home Screen App Widget Receiver -->
         <receiver
             android:name=".widget.TipsyWidgetProvider"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/widget_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.tipsybuddy.app.ACTION_ADD_BEER" />
+                <action android:name="com.tipsybuddy.app.ACTION_ADD_WINE" />
+                <action android:name="com.tipsybuddy.app.ACTION_ADD_SHOT" />
                 <action android:name="com.tipsybuddy.app.ACTION_ADD_WATER" />
                 <action android:name="com.tipsybuddy.app.ACTION_UPDATE_WIDGET" />
             </intent-filter>
