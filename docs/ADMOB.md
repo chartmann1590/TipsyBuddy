@@ -2,22 +2,58 @@
 
 Debug builds use **Google's official test unit IDs** so ads load safely in development.
 
-## Where to put production IDs
+## Where production IDs live (never hardcoded)
 
-1. **`app/build.gradle.kts`** — `buildTypes.release` block:
-   - `BuildConfig.ADMOB_APP_ID`
-   - `BuildConfig.ADMOB_BANNER_ID`
-   - `BuildConfig.ADMOB_INTERSTITIAL_ID`
-   - `manifestPlaceholders["admobAppId"]` (must match App ID)
+Release builds resolve production IDs at build time — no real publisher IDs
+appear in committed source. Priority (first non-blank wins):
 
-2. **`AndroidManifest.xml`** — already wired via:
-   ```xml
-   <meta-data
-       android:name="com.google.android.gms.ads.APPLICATION_ID"
-       android:value="${admobAppId}" />
+1. **Gradle property** `-P ADMOB_APP_ID / ADMOB_BANNER_ID / ADMOB_INTERSTITIAL_ID`
+2. **Environment** `ADMOB_APP_ID / ADMOB_BANNER_ID / ADMOB_INTERSTITIAL_ID`
+   — GitHub Actions maps the repository Secrets of the same names to env
+   (see `.github/workflows/android-release.yml`).
+3. **`local.properties`** (gitignored, local dev only):
+   ```properties
+   admob.app.id=ca-app-pub-XXXX~YYYY
+   admob.banner.id=ca-app-pub-XXXX/BBBB
+   admob.interstitial.id=ca-app-pub-XXXX/IIII
    ```
+4. **Fallback**: Google official test IDs (build never breaks without Secrets).
 
-3. **`AdsConfig.kt`** — documents placeholders and reads BuildConfig at runtime.
+`app/build.gradle.kts` (`buildTypes.release`) wires the resolved values into:
+
+- `BuildConfig.ADMOB_APP_ID`
+- `BuildConfig.ADMOB_BANNER_ID`
+- `BuildConfig.ADMOB_INTERSTITIAL_ID`
+- `manifestPlaceholders["admobAppId"]` (must match App ID)
+
+**`AndroidManifest.xml`** — already wired via:
+
+```xml
+<meta-data
+    android:name="com.google.android.gms.ads.APPLICATION_ID"
+    android:value="${admobAppId}" />
+```
+
+**`AdsConfig.kt`** — documents placeholders and reads BuildConfig at runtime.
+
+## GitHub Secrets setup
+
+Create these repository Secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Value shape |
+|--------|-------------|
+| `ADMOB_APP_ID` | `ca-app-pub-XXXX~YYYY` |
+| `ADMOB_BANNER_ID` | `ca-app-pub-XXXX/BBBB` |
+| `ADMOB_INTERSTITIAL_ID` | `ca-app-pub-XXXX/IIII` |
+
+```bash
+gh secret set ADMOB_APP_ID --body "ca-app-pub-XXXX~YYYY" --repo <owner>/<repo>
+gh secret set ADMOB_BANNER_ID --body "ca-app-pub-XXXX/BBBB" --repo <owner>/<repo>
+gh secret set ADMOB_INTERSTITIAL_ID --body "ca-app-pub-XXXX/IIII" --repo <owner>/<repo>
+```
+
+The release workflow passes them as env vars; Gradle picks them up
+automatically. Debug builds always use test IDs regardless of Secrets.
 
 ## Official Google test IDs (default)
 
