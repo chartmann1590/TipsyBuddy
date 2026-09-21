@@ -1,4 +1,14 @@
 <resources>
     <string name="app_name">TipsyBuddy</string>
-    <string name="widget_description">Live BAC monitor and quick drink logger</string>
+    <string name="widget_name">Tonight stats</string>
+    <string name="widget_title">TipsyBuddy</string>
+    <string name="widget_description">Live BAC, tonight’s tab, and one-tap drink logging</string>
+    <string name="widget_bac_label">EST. BAC</string>
+    <string name="widget_zone_sober">SOBER</string>
+    <string name="widget_status_empty">0 drinks tonight • Sober</string>
+    <string name="widget_detail_empty" formatted="false">$0 tab • 100% hydrated • Sober now</string>
+    <string name="widget_btn_beer">+🍺 Beer</string>
+    <string name="widget_btn_wine">+🍷 Wine</string>
+    <string name="widget_btn_shot">+🥃 Shot</string>
+    <string name="widget_btn_water">+💧 Water</string>
 </resources>
