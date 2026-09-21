@@ -70,6 +70,20 @@ class UserPreferences(context: Context) {
         get() = prefs.getString("active_night_date", "") ?: ""
         set(value) = prefs.edit().putString("active_night_date", value).apply()
 
+    var lastSeenCheerAt: String
+        get() = prefs.getString("last_seen_cheer_at", "") ?: ""
+        set(value) = prefs.edit().putString("last_seen_cheer_at", value).apply()
+
+    // Last known venue/status, persisted so the background LiveShareService can keep
+    // syncing them even when the check-in screen isn't open.
+    var liveVenueName: String
+        get() = prefs.getString("live_venue_name", "") ?: ""
+        set(value) = prefs.edit().putString("live_venue_name", value).apply()
+
+    var liveStatusMessage: String
+        get() = prefs.getString("live_status_message", "Partying at Venue 🍸") ?: "Partying at Venue 🍸"
+        set(value) = prefs.edit().putString("live_status_message", value).apply()
+
     fun resetNewSessionId(): String {
         val newId = "tb-" + UUID.randomUUID().toString().substring(0, 6)
         liveSessionId = newId

@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <!-- Required for AdMob advertising ID on Android 13+ -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
@@ -89,6 +91,12 @@
                     android:host="*" />
             </intent-filter>
         </service>
+
+        <!-- Keeps live location + wave sync running while the app is backgrounded -->
+        <service
+            android:name=".LiveShareService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
     </application>
 
 </manifest>

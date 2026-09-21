@@ -10,7 +10,10 @@ android {
     defaultConfig {
         applicationId = "com.tipsybuddy.app"
         minSdk = 30
-        targetSdk = 35
+        // targetSdk 34 (not 35): androidx.wear.compose.foundation 1.3.1's
+        // ScalingLazyColumn reads the reduce_motion Settings.Global key,
+        // which throws SecurityException for targetSdk 35+ on some system images.
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
         vectorDrawables {

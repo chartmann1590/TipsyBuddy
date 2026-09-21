@@ -53,6 +53,8 @@ Friends don't need to install any app to track you. When you turn on Live Sharin
 - **Embedded OpenStreetMap**: In-app native map view via OSMDroid (`org.osmdroid:osmdroid-android`).
 - **Live Sharing Timer**: Share your live location with friends for **30 min, 1 hour, 2 hours, or 4 hours**.
 - **Real-Time REST Sync**: Pushes coordinates, battery %, and BAC directly to Firebase Firestore via REST.
+- **Background Sharing**: A location foreground service keeps updates running after leaving the check-in screen, with an ongoing notification and the saved sharing deadline.
+- **Friend Check-In Waves**: Website visitors can send a wave that appears as a phone notification when notifications are allowed. Partial Firestore updates preserve waves during location sync.
 - **Android Share Sheet**: 1-tap SMS or WhatsApp sharing of your live web tracker link.
 
 ### 🚖 6. Safe Ride Home (Uber & Lyft Integration)
@@ -73,7 +75,7 @@ Friends don't need to install any app to track you. When you turn on Live Sharin
 
 | Component | Free Solution | Cost |
 | :--- | :--- | :--- |
-| **Companion Web Map** | Leaflet.js + CartoDB Dark Matter / OpenStreetMap | **$0.00** |
+| **Companion Web Map** | Leaflet.js + standard OpenStreetMap tiles (no API key) | **$0.00** |
 | **Android In-App Map** | OSMDroid (`org.osmdroid:osmdroid-android`) | **$0.00** |
 | **Geocoding** | Android Native `android.location.Geocoder` | **$0.00** |
 | **Live Database & Sync** | Firebase Firestore REST API on Spark Free Tier | **$0.00** |
@@ -93,7 +95,7 @@ Friends don't need to install any app to track you. When you turn on Live Sharin
   - Mapping: OSMDroid 6.1.18 (OpenStreetMap)
 - **Web Companion**:
   - HTML5, CSS3 (Midnight Dark Theme), Vanilla JavaScript
-  - Map Engine: Leaflet.js 1.9.4 with CartoDB Dark Matter tiles
+  - Map Engine: Leaflet.js 1.9.4 with standard OpenStreetMap tiles and visible attribution
   - API: Firestore v1 REST API (Spark Free Tier)
   - CLI: Firebase CLI 15.x
 
@@ -128,6 +130,12 @@ Friends don't need to install any app to track you. When you turn on Live Sharin
    ```bash
    firebase deploy --only hosting,firestore:rules
    ```
+
+### Validation
+
+- Run the web sync regression tests with `node --test tests/web-sync.test.cjs`.
+- With JDK 17, run `./gradlew :app:assembleDebug :wear:assembleDebug :app:lintDebug :wear:lintDebug`.
+- For live sharing, verify on a phone that location updates continue after backgrounding, waves produce notifications, and turning sharing off or reaching its deadline stops the service. Check both approximate location access and denied permissions.
 
 ---
 
