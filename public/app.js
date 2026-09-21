@@ -8,6 +8,7 @@ let currentSessionData = null;
 let currentSessionId = null;
 let updateInterval = null;
 let countdownInterval = null;
+let isSendingCheer = false;
 
 // Parse Query Parameters
 function getQueryParam(param) {
@@ -211,6 +212,13 @@ function renderSession(data) {
   updateCountdown();
 }
 
+// Check whether a session's sharing window has passed
+function isSessionExpired(data) {
+  if (!data || !data.expiresAt) return false;
+  const expireTime = new Date(data.expiresAt).getTime();
+  return !Number.isNaN(expireTime) && expireTime <= Date.now();
+}
+
 // Expiration Countdown
 function updateCountdown() {
   if (!currentSessionData || !currentSessionData.expiresAt) {
@@ -228,6 +236,8 @@ function updateCountdown() {
     timerRemaining.style.color = "#EF4444";
     expiryLabel.textContent = "Live share finished";
     liveStatusText.textContent = "Session Ended";
+    sendCheerBtn.disabled = true;
+    sendCheerBtn.title = "Live share session has expired";
   } else {
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -235,6 +245,10 @@ function updateCountdown() {
     timerRemaining.textContent = `${hours > 0 ? hours + 'h ' : ''}${minutes}m ${seconds}s`;
     timerRemaining.style.color = "#F59E0B";
     expiryLabel.textContent = "Remaining live time";
+    if (!isSendingCheer) {
+      sendCheerBtn.disabled = false;
+      sendCheerBtn.title = "";
+    }
   }
 }
 
@@ -258,7 +272,13 @@ async function fetchSessionData(sessionId) {
 }
 
 // Send a "wave" check-in ping back to the phone (partial update, doesn't touch other fields)
-async function sendWave(sessionId) {
+async function sendWave(sessionId, sessionData = currentSessionData) {
+  if (isSessionExpired(sessionData)) {
+    if (typeof console !== "undefined" && typeof console.warn === "function") {
+      console.warn("Cannot send wave: session has expired");
+    }
+    return false;
+  }
   try {
     const url = `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT_ID}/databases/(default)/documents/sessions/${encodeURIComponent(sessionId)}?updateMask.fieldPaths=cheerSentAt`;
     const res = await fetch(url, {
@@ -337,13 +357,26 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   sendCheerBtn.addEventListener("click", async () => {
-    if (!currentSessionId) return;
+    if (!currentSessionId || isSessionExpired(currentSessionData)) {
+      sendCheerBtn.disabled = true;
+      sendCheerBtn.title = "Live share session has expired";
+      return;
+    }
+    isSendingCheer = true;
     sendCheerBtn.disabled = true;
-    const ok = await sendWave(currentSessionId);
+    const ok = await sendWave(currentSessionId, currentSessionData);
     sendCheerBtn.innerHTML = ok ? "🎉 Wave Sent!" : "⚠️ Wave failed, try again";
     setTimeout(() => {
-      sendCheerBtn.innerHTML = '👋 Send "Check In" Wave';
-      sendCheerBtn.disabled = false;
+      isSendingCheer = false;
+      if (isSessionExpired(currentSessionData)) {
+        sendCheerBtn.disabled = true;
+        sendCheerBtn.innerHTML = '👋 Send "Check In" Wave';
+        sendCheerBtn.title = "Live share session has expired";
+      } else {
+        sendCheerBtn.innerHTML = '👋 Send "Check In" Wave';
+        sendCheerBtn.disabled = false;
+        sendCheerBtn.title = "";
+      }
     }, 3000);
   });
 

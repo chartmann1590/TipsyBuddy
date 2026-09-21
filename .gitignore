@@ -73,3 +73,5 @@ Thumbs.db
 
 # Generated local tool ownership/locking state
 .claude/.headroom_wrap_*
+.claude/settings.local.json
+.claude/*.local.json

@@ -16,6 +16,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
@@ -33,6 +34,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 /**
  * Foreground service that keeps pushing location/BAC to Firestore and polling for waves
@@ -49,7 +51,7 @@ class LiveShareService : Service() {
     @Volatile private var latestLocation: Location? = null
     private val locationListener = object : LocationListener {
         override fun onLocationChanged(location: Location) {
-            if (location.elapsedRealtimeNanos >= (latestLocation?.elapsedRealtimeNanos ?: 0L)) {
+            if (isLocationFresh(location) && location.elapsedRealtimeNanos >= (latestLocation?.elapsedRealtimeNanos ?: 0L)) {
                 latestLocation = location
             }
         }
@@ -57,6 +59,11 @@ class LiveShareService : Service() {
         override fun onProviderDisabled(provider: String) = Unit
         @Deprecated("Required for Android 8 compatibility")
         override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
+    }
+
+    private fun isLocationFresh(location: Location): Boolean {
+        val ageNanos = SystemClock.elapsedRealtimeNanos() - location.elapsedRealtimeNanos
+        return ageNanos in 0L..MAX_LOCATION_AGE_NANOS
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -104,7 +111,7 @@ class LiveShareService : Service() {
                     break
                 }
 
-                val location = latestLocation
+                val location = latestLocation?.takeIf { isLocationFresh(it) }
                 val dateStr = userPrefs.activeNightDate.ifBlank {
                     SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                 }
@@ -158,7 +165,11 @@ class LiveShareService : Service() {
         val providers = if (precise) listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER)
             else listOf(LocationManager.NETWORK_PROVIDER)
         providers.filter { it in locationManager.allProviders }.forEach { provider ->
-            locationManager.getLastKnownLocation(provider)?.let(locationListener::onLocationChanged)
+            locationManager.getLastKnownLocation(provider)?.let { cached ->
+                if (isLocationFresh(cached)) {
+                    locationListener.onLocationChanged(cached)
+                }
+            }
             locationManager.requestLocationUpdates(provider, SYNC_INTERVAL_MS, 0f, locationListener, Looper.getMainLooper())
         }
     }
@@ -206,5 +217,7 @@ class LiveShareService : Service() {
         private const val CHANNEL_ID = "live_share_status"
         private const val NOTIFICATION_ID = 4042
         private const val SYNC_INTERVAL_MS = 8000L
+        private const val MAX_LOCATION_AGE_MS = 60_000L
+        private val MAX_LOCATION_AGE_NANOS = TimeUnit.MILLISECONDS.toNanos(MAX_LOCATION_AGE_MS)
     }
 }

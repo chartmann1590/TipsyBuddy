@@ -484,6 +484,13 @@ body {
   border-color: #334155;
 }
 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+
 /* Home / Hero View */
 .hero-card {
   background: var(--card-bg);

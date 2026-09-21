@@ -7,7 +7,7 @@ const vm = require('node:vm');
 function loadApp(fetch) {
   const context = vm.createContext({
     fetch,
-    console: { error() {} },
+    console: { error() {}, warn() {} },
     document: { getElementById: () => ({}), addEventListener() {} },
     URLSearchParams,
     window: { location: { search: '' } }
@@ -58,4 +58,30 @@ test('session refresh reads the status, location, and sharing deadline', async (
   assert.equal(session.latitude, 40.7128);
   assert.equal(session.longitude, -74.006);
   assert.equal(session.expiresAt, '2026-09-21T03:00:00Z');
+});
+
+test('wave requests are rejected when session sharing window has expired', async () => {
+  let fetchCalled = false;
+  const app = loadApp(async () => {
+    fetchCalled = true;
+    return { ok: true };
+  });
+  const expiredSession = {
+    expiresAt: new Date(Date.now() - 60000).toISOString()
+  };
+  assert.equal(await app.sendWave('tb-test', expiredSession), false);
+  assert.equal(fetchCalled, false);
+});
+
+test('wave requests succeed when session sharing window is still active', async () => {
+  let fetchCalled = false;
+  const app = loadApp(async () => {
+    fetchCalled = true;
+    return { ok: true };
+  });
+  const activeSession = {
+    expiresAt: new Date(Date.now() + 60000).toISOString()
+  };
+  assert.equal(await app.sendWave('tb-test', activeSession), true);
+  assert.equal(fetchCalled, true);
 });
