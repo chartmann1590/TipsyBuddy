@@ -73,6 +73,12 @@ test('wave requests are rejected when session sharing window has expired', async
   assert.equal(fetchCalled, false);
 });
 
+test('live map degrades gracefully when Leaflet is blocked by consent', () => {
+  const app = loadApp(async () => ({ ok: true }));
+  assert.doesNotThrow(() => app.updateMapPosition(40.7128, -74.006, 'Club', 'Alex'));
+  assert.doesNotThrow(() => app.retryPendingMap());
+});
+
 test('wave requests succeed when session sharing window is still active', async () => {
   let fetchCalled = false;
   const app = loadApp(async () => {
