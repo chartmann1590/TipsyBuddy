@@ -1,7 +1,53 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
+}
+
+// ---------------------------------------------------------------------------
+// AdMob ID resolution — no production IDs are hardcoded in this file.
+// Priority (first non-blank wins):
+//   1. Gradle property  -P ADMOB_APP_ID / ADMOB_BANNER_ID / ADMOB_INTERSTITIAL_ID
+//      (or the same keys in ~/.gradle/gradle.properties)
+//   2. Environment      ADMOB_APP_ID / ADMOB_BANNER_ID / ADMOB_INTERSTITIAL_ID
+//      (GitHub Actions maps repository Secrets of the same names to env —
+//       see .github/workflows/android-release.yml)
+//   3. local.properties admob.app.id / admob.banner.id / admob.interstitial.id
+//      (gitignored — local dev machine only, safe for real IDs)
+//   4. Fallback: Google official test IDs (safe, never real traffic)
+// Debug builds always use the test IDs. Release builds use the resolved IDs,
+// so CI with Secrets (or a dev machine with local.properties) gets production
+// ads while every other build keeps working with test ads.
+// ---------------------------------------------------------------------------
+val localAdMobProps = Properties()
+run {
+    val propsFile = rootProject.file("local.properties")
+    if (propsFile.exists()) {
+        propsFile.inputStream().use { stream -> localAdMobProps.load(stream) }
+    }
+}
+
+fun resolveAdMobId(
+    gradleKey: String,
+    localKey: String,
+    envKey: String,
+    fallback: String
+): String {
+    val fromGradle = project.findProperty(gradleKey)?.toString()
+    if (!fromGradle.isNullOrBlank()) {
+        return fromGradle.trim()
+    }
+    val fromEnv = System.getenv(envKey)
+    if (!fromEnv.isNullOrBlank()) {
+        return fromEnv.trim()
+    }
+    val fromLocal = localAdMobProps.getProperty(localKey)
+    if (!fromLocal.isNullOrBlank()) {
+        return fromLocal.trim()
+    }
+    return fallback
 }
 
 android {
@@ -21,7 +67,7 @@ android {
         }
 
         // Default = Google official test AdMob IDs (safe for debug / local builds).
-        // PRODUCTION: override these in buildTypes.release below before Play upload.
+        // Release resolves production IDs from Secrets / local.properties.
         // See docs/ADMOB.md and AdsConfig.kt.
         val testAppId = "ca-app-pub-3940256099942544~3347511713"
         val testBannerId = "ca-app-pub-3940256099942544/6300978111"
@@ -40,17 +86,27 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // -----------------------------------------------------------------
-            // PRODUCTION AdMob IDs — replace placeholders before shipping.
-            // Create App + Banner + Interstitial units in AdMob console, then:
-            //   ADMOB_APP_ID          = ca-app-pub-XXXX~YYYY
-            //   ADMOB_BANNER_ID       = ca-app-pub-XXXX/BBBB
-            //   ADMOB_INTERSTITIAL_ID = ca-app-pub-XXXX/IIII
-            // Until replaced, release still uses Google test IDs so builds work.
-            // -----------------------------------------------------------------
-            val prodAppId = "ca-app-pub-3940256099942544~3347511713" // TODO: production App ID
-            val prodBannerId = "ca-app-pub-3940256099942544/6300978111" // TODO: production banner
-            val prodInterstitialId = "ca-app-pub-3940256099942544/1033173712" // TODO: production interstitial
+            // Production AdMob IDs resolved from Secrets / local.properties.
+            // Never hardcode real publisher IDs here — see header comment.
+            // Without Secrets (or local.properties), release falls back to
+            // Google test IDs so the build never breaks.
+            val prodAppId = resolveAdMobId(
+                "ADMOB_APP_ID", "admob.app.id", "ADMOB_APP_ID",
+                "ca-app-pub-3940256099942544~3347511713"
+            )
+            val prodBannerId = resolveAdMobId(
+                "ADMOB_BANNER_ID", "admob.banner.id", "ADMOB_BANNER_ID",
+                "ca-app-pub-3940256099942544/6300978111"
+            )
+            val prodInterstitialId = resolveAdMobId(
+                "ADMOB_INTERSTITIAL_ID", "admob.interstitial.id", "ADMOB_INTERSTITIAL_ID",
+                "ca-app-pub-3940256099942544/1033173712"
+            )
+            // Log only WHICH pool is used — never the ID values themselves.
+            val usingProdAds = !prodAppId.startsWith("ca-app-pub-3940256099942544~") ||
+                !prodBannerId.startsWith("ca-app-pub-3940256099942544/") ||
+                !prodInterstitialId.startsWith("ca-app-pub-3940256099942544/")
+            println("AdMob release build: using " + if (usingProdAds) "PRODUCTION" else "TEST" + " ad IDs")
             buildConfigField("String", "ADMOB_APP_ID", "\"$prodAppId\"")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"$prodBannerId\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"$prodInterstitialId\"")
@@ -97,6 +153,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.activity.compose)
+    // Explicit fragment version: registerForActivityResult (MainActivity) requires
+    // androidx.fragment >= 1.3.0 for release lint; without this a transitive
+    // 1.1.0 wins and :app:lintVitalRelease fails, blocking every prod build.
+    implementation(libs.androidx.fragment.ktx)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
