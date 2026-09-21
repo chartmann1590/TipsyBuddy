@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cookie Policy - TipsyBuddy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .legal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .legal-card h1 {
+      font-family: var(--font-heading);
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      background: linear-gradient(90deg, #FDE68A, #F59E0B, #FB923C);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .legal-card .updated {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .legal-card h2 {
+      font-family: var(--font-heading);
+      font-size: 17px;
+      margin: 22px 0 8px 0;
+      color: #FFFFFF;
+    }
+    .legal-card p, .legal-card li {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .legal-card ul {
+      padding-left: 20px;
+      margin: 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .legal-card a { color: var(--accent-neon); }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .footer-links a:hover { color: var(--accent-gold); text-decoration: underline; }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 16px;
+      color: var(--accent-neon);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="logo-container">
+      <div class="logo-icon">🍻</div>
+      <div class="logo-text">
+        <span class="brand-title">TipsyBuddy</span>
+        <span class="brand-sub">Live Safe Wingman</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <a class="back-link" href="index.html">← Back to Tracker</a>
+    <div class="legal-card">
+      <h1>Cookie Policy</h1>
+      <p class="updated">Last updated: September 21, 2026</p>
+
+      <p>This Cookie Policy explains how TipsyBuddy ("we", "us") uses cookies and similar technologies when you visit the TipsyBuddy tracker page (tipsybuddy.app and any page that loads <code>index.html</code>). It also explains your choices and how to change them.</p>
+
+      <h2>1. We don't set first-party tracking cookies</h2>
+      <p>TipsyBuddy does not set any first-party analytics or advertising cookies of its own. We do not profile you, track your browsing across sites, or sell your data. The only thing we remember is the cookie consent choice you make below, and that preference is stored in your browser's <strong>localStorage</strong> — not in a cookie.</p>
+
+      <h2>2. How your consent is stored</h2>
+      <p>When you accept or reject non-essential cookies, we save your choice in localStorage under the key <code>tipsybuddy_cookie_consent_v1</code>. The stored value looks like:</p>
+      <pre style="background:#0B0F19;border:1px solid #334155;border-radius:8px;padding:10px 12px;font-size:12px;color:#CBD5E1;overflow:auto;margin:8px 0;">{ "necessary": true, "optional": true|false, "ts": "2026-09-21T12:00:00.000Z" }</pre>
+      <p>(<code>necessary</code> is always true — the page can't work without the hosting and map tiles needed to display it. <code>optional</code> reflects whether you accepted the optional third-party resources such as fonts.) Because this is stored in localStorage rather than a cookie, dismissing or accepting the banner does not place a tracking cookie on your device.</p>
+
+      <h2>3. Third-party cookies we rely on</h2>
+      <p>The tracker page loads content and functionality from the following third-party providers. These providers may set their own cookies (both during and after your visit) according to their own policies:</p>
+      <ul>
+        <li><strong>Firebase (Hosting &amp; Firestore) &middot; Google</strong> — serves the tracker page and streams live location/venue/ride updates to friends via Firestore. Firebase may set cookies such as <code>firebase</code> / <code>__hsinit</code> and related performance/analytics identifiers.</li>
+        <li><strong>OpenStreetMap (OSM) tiles</strong> — provides the map tiles shown on the live map. The tile server (<code>tile.openstreetmap.org</code> / <code>tile.khomonia.com</code> style hosts) may set session cookies to balance load and prevent abuse.</li>
+        <li><strong>Leaflet (CDN) &middot; unpkg</strong> — the <code>unpkg.com/leaflet@1.9.4</code> CDN delivers the Leaflet CSS and JavaScript used to render the map. unpkg may set first-party cookies for analytics/caching and set the <code>SameSite</code>/<code>__Host-</code> cookies to serve your requests.</li>
+        <li><strong>Google Fonts</strong> — provides the Outfit and Plus Jakarta Sans fonts used across the site. Google Fonts may set cookies (for example <code>__Secure-ENID</code>-style identifiers) to serve font files; these are only loaded when you accept optional cookies, since fonts are an optional resource.</li>
+      </ul>
+      <p>You should review each provider's cookie policy for details about the cookies they set:</p>
+      <ul>
+        <li><a href="https://firebase.google.com/policies/analytics" target="_blank" rel="noopener">Firebase / Google Analytics terms</a></li>
+        <li><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap copyright &amp; licensing</a></li>
+        <li><a href="https://unpkg.com/" target="_blank" rel="noopener">unpkg — npm content delivery</a></li>
+        <li><a href="https://developers.google.com/fonts/docs/technical_considerations" target="_blank" rel="noopener">Google Fonts technical considerations</a></li>
+      </ul>
+
+      <h2>4. What happens if you reject</h2>
+      <p>If you click <strong>Reject</strong>, we record <code>optional: false</code> in localStorage and we do not load the optional third-party resources (Leaflet and Google Fonts are not fetched). The page still works, but the map tiles and custom fonts may be limited. Note that the third-party services strictly required to serve the page (Firebase hosting) are "necessary" cookies and cannot be disabled if you want to use the tracker.</p>
+
+      <h2>5. How to manage or change your choice</h2>
+      <p>You can update your cookie preferences at any time:</p>
+      <ul>
+        <li><strong>Cookie banner</strong> — on your first visit (when no choice is saved) the banner asks you to Accept or Reject. Choosing again updates the stored preference.</li>
+        <li><strong>Cookie Settings</strong> — every page footer has a <em>Cookie Settings</em> button. Clicking it clears the saved choice from localStorage and shows the banner again so you can pick differently.</li>
+        <li><strong>Programmatically</strong> — developers/embedders can call the reset API exposed by <code>cookie-consent.js</code>:</li>
+      </ul>
+      <pre style="background:#0B0F19;border:1px solid #334155;border-radius:8px;padding:10px 12px;font-size:12px;color:#CBD5E1;overflow:auto;margin:8px 0;">window.TipsyCookieConsent.reset();</pre>
+      <p>This clears <code>tipsybuddy_cookie_consent_v1</code> from localStorage, updates the footer status text, and scrolls the banner back into view.</p>
+
+      <h2>6. Do Not Track</h2>
+      <p>TipsyBuddy does not respond to Do Not Track signals in any particular way, because we do not run any first-party tracking. If you do not want third-party cookies, please use the Reject option or your browser's built-in controls to block or delete cookies.</p>
+
+      <h2>7. Changes to this policy</h2>
+      <p>If we update this Cookie Policy, we'll post the new version here with a new "Last updated" date. Your consent choice is stored per-browser, so a policy update does not override your existing preference.</p>
+
+      <h2>8. Contact us</h2>
+      <p>Questions about cookies? Open an issue on our GitHub repository: <a href="https://github.com/chartmann1590/TipsyBuddy">github.com/chartmann1590/TipsyBuddy</a>.</p>
+
+      <p style="margin-top:16px;">Related: <a href="privacy.html">Privacy Policy</a> &bull; <a href="terms.html">Terms of Use</a></p>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-links">
+      <a href="index.html">Live Tracker</a>
+      <span>•</span>
+      <a href="privacy.html">Privacy Policy</a>
+      <span>•</span>
+      <a href="terms.html">Terms of Use</a>
+      <span>•</span>
+      <a href="cookies.html">Cookie Policy</a>
+      <span>•</span>
+      <button class="link-button" type="button" data-cookie-reset>Cookie Settings</button>
+    </div>
+    <p>Powered by <strong>TipsyBuddy</strong> • Free, Privacy-Focused & OpenStreetMap</p>
+    <p class="disclaimer">BAC calculations are estimates for harm reduction and safety. Always drink responsibly and never drink &amp; drive.</p>
+  </footer>
+
+  <div id="cookieBanner" class="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie consent" hidden>
+    <div class="cookie-banner-text">
+      <strong>🍪 We use cookies.</strong>
+      <span>TipsyBuddy loads third-party services (maps, fonts, hosting) that may set cookies. <a href="cookies.html">Cookie Policy</a></span>
+    </div>
+    <div class="cookie-banner-actions">
+      <button class="btn btn-secondary btn-sm" type="button" data-cookie-reject>Reject</button>
+      <button class="btn btn-primary btn-sm" type="button" data-cookie-accept>Accept</button>
+    </div>
+  </div>
+
+  <script src="cookie-consent.js" defer></script>
+</body>
+</html>
