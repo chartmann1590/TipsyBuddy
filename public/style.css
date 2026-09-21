@@ -34,6 +34,8 @@ body {
 /* Header */
 .app-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
@@ -111,6 +113,12 @@ body {
   100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
+.view-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 /* Container */
 .main-container {
   flex: 1;
@@ -144,6 +152,7 @@ body {
 .avatar-box {
   width: 54px;
   height: 54px;
+  flex-shrink: 0;
   border-radius: 16px;
   background: linear-gradient(135deg, #3B82F6, #8B5CF6);
   display: flex;
@@ -156,6 +165,7 @@ body {
 
 .user-details {
   flex: 1;
+  min-width: 0;
 }
 
 .user-details h2 {
@@ -163,6 +173,7 @@ body {
   font-size: 20px;
   font-weight: 700;
   color: #FFFFFF;
+  overflow-wrap: anywhere;
 }
 
 .venue-line {
@@ -170,6 +181,19 @@ body {
   color: var(--accent-neon);
   font-weight: 500;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-line {
+  font-size: 13px;
+  color: #CBD5E1;
+  font-style: italic;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .battery-tag {
@@ -180,6 +204,7 @@ body {
   border-radius: 12px;
   border: 1px solid var(--card-border);
   color: #E2E8F0;
+  flex-shrink: 0;
 }
 
 /* Metrics Grid */
@@ -209,6 +234,7 @@ body {
 
 .bac-display {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 8px;
 }
@@ -304,6 +330,8 @@ body {
 
 .map-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: space-between;
   align-items: center;
   padding: 14px 18px;
@@ -331,6 +359,8 @@ body {
 
 .map-footer {
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   justify-content: space-between;
   align-items: center;
   padding: 10px 16px;
@@ -342,6 +372,16 @@ body {
   font-size: 11px;
   color: var(--text-muted);
   font-family: monospace;
+}
+
+#recenterBtn {
+  min-height: 44px;
+}
+
+.leaflet-touch .leaflet-bar a {
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
 }
 
 /* Actions Section */
@@ -505,6 +545,7 @@ body {
 
 .input-row input {
   flex: 1;
+  min-width: 0;
   background: #0B0F19;
   border: 1px solid #334155;
   color: #FFFFFF;
@@ -580,6 +621,9 @@ body {
 
 /* Responsive tweaks */
 @media (max-width: 480px) {
+  .input-row {
+    flex-direction: column;
+  }
   .metric-grid {
     grid-template-columns: 1fr;
   }

@@ -5,6 +5,7 @@ const FIRESTORE_PROJECT_ID = "party-quips-2026";
 let map = null;
 let friendMarker = null;
 let currentSessionData = null;
+let currentSessionId = null;
 let updateInterval = null;
 let countdownInterval = null;
 
@@ -22,6 +23,7 @@ const liveStatusText = document.getElementById("liveStatusText");
 
 const userNameDisplay = document.getElementById("userNameDisplay");
 const venueNameDisplay = document.getElementById("venueNameDisplay");
+const statusMessageDisplay = document.getElementById("statusMessageDisplay");
 const batteryDisplay = document.getElementById("batteryDisplay");
 const bacValue = document.getElementById("bacValue");
 const bacZone = document.getElementById("bacZone");
@@ -48,13 +50,14 @@ function initMap(lat, lon) {
 
   map = L.map('liveMap', {
     zoomControl: false,
-    attributionControl: false
+    attributionControl: true,
+    scrollWheelZoom: false
   }).setView([lat, lon], 16);
 
-  // CartoDB Dark Matter tiles (free, dark-mode nightlife theme)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  // Standard OpenStreetMap tiles do not require an API key.
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    subdomains: 'abcd',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
 
   L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -142,6 +145,12 @@ function renderSession(data) {
 
   userNameDisplay.textContent = `${data.userName}'s Night Out`;
   venueNameDisplay.textContent = data.venue || "Exploring the city";
+  if (data.status && data.status !== "Active") {
+    statusMessageDisplay.textContent = `💬 ${data.status}`;
+    statusMessageDisplay.style.display = "block";
+  } else {
+    statusMessageDisplay.style.display = "none";
+  }
   batteryDisplay.textContent = `🔋 ${data.battery}%`;
 
   // BAC display
@@ -248,6 +257,26 @@ async function fetchSessionData(sessionId) {
   }
 }
 
+// Send a "wave" check-in ping back to the phone (partial update, doesn't touch other fields)
+async function sendWave(sessionId) {
+  try {
+    const url = `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT_ID}/databases/(default)/documents/sessions/${encodeURIComponent(sessionId)}?updateMask.fieldPaths=cheerSentAt`;
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fields: {
+          cheerSentAt: { stringValue: new Date().toISOString() }
+        }
+      })
+    });
+    return res.ok;
+  } catch (err) {
+    console.error("Failed to send wave:", err);
+    return false;
+  }
+}
+
 // UI State Management
 function showSessionView() {
   sessionView.style.display = "flex";
@@ -265,6 +294,7 @@ function showHomeView(message) {
 
 // Load Session
 async function loadSession(sessionId) {
+  currentSessionId = sessionId;
   showSessionView();
   liveStatusText.textContent = "Loading...";
 
@@ -306,10 +336,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  sendCheerBtn.addEventListener("click", () => {
-    sendCheerBtn.innerHTML = "🎉 Wave Sent!";
+  sendCheerBtn.addEventListener("click", async () => {
+    if (!currentSessionId) return;
+    sendCheerBtn.disabled = true;
+    const ok = await sendWave(currentSessionId);
+    sendCheerBtn.innerHTML = ok ? "🎉 Wave Sent!" : "⚠️ Wave failed, try again";
     setTimeout(() => {
       sendCheerBtn.innerHTML = '👋 Send "Check In" Wave';
+      sendCheerBtn.disabled = false;
     }, 3000);
   });
 

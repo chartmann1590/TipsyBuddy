@@ -70,3 +70,6 @@ Thumbs.db
 
 # Firebase CLI cache
 .firebase/
+
+# Generated local tool ownership/locking state
+.claude/.headroom_wrap_*

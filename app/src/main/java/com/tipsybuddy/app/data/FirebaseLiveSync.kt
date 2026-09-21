@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.BatteryManager
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -69,7 +70,14 @@ class FirebaseLiveSync(private val context: Context) {
                 put("fields", fields)
             }
 
-            val url = "https://firestore.googleapis.com/v1/projects/party-quips-2026/databases/(default)/documents/sessions/${sessionId}"
+            // updateMask restricts the PATCH to only these fields, so it doesn't wipe out
+            // fields the website writes independently (e.g. cheerSentAt from a wave).
+            val fieldNames = listOf(
+                "userName", "venue", "status", "latitude", "longitude", "bac",
+                "battery", "homeAddress", "phone", "expiresAt", "updatedAt"
+            )
+            val maskQuery = fieldNames.joinToString("&") { "updateMask.fieldPaths=$it" }
+            val url = "https://firestore.googleapis.com/v1/projects/party-quips-2026/databases/(default)/documents/sessions/${sessionId}?$maskQuery"
             val request = Request.Builder()
                 .url(url)
                 .patch(jsonBody.toString().toRequestBody("application/json".toMediaType()))
@@ -82,9 +90,31 @@ class FirebaseLiveSync(private val context: Context) {
                 }
                 isSuccess
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e("TipsyLiveSync", "Exception syncing live location", e)
             false
+        }
+    }
+
+    /** Returns the ISO timestamp of the most recent wave sent from the web view, or null. */
+    suspend fun fetchLatestCheer(sessionId: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val url = "https://firestore.googleapis.com/v1/projects/party-quips-2026/databases/(default)/documents/sessions/${sessionId}?mask.fieldPaths=cheerSentAt"
+            val request = Request.Builder().url(url).get().build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext null
+                val body = response.body?.string() ?: return@withContext null
+                val fields = JSONObject(body).optJSONObject("fields") ?: return@withContext null
+                fields.optJSONObject("cheerSentAt")?.optString("stringValue")?.takeIf { it.isNotBlank() }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("TipsyLiveSync", "Exception fetching cheer", e)
+            null
         }
     }
 }

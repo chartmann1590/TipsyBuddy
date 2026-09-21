@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.location.Location
 import android.location.LocationManager
 import android.widget.Toast
+import com.tipsybuddy.app.LiveShareService
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -112,6 +113,7 @@ private fun createVenueMarkerBitmap(context: Context): BitmapDrawable {
     return drawable
 }
 
+
 @Composable
 fun VenueCheckInScreen(
     drinks: List<DrinkEntity>,
@@ -137,7 +139,7 @@ fun VenueCheckInScreen(
 
     var isLiveSharing by remember { mutableStateOf(userPrefs.isLiveSharing) }
     var selectedDurationMins by remember { mutableIntStateOf(userPrefs.liveDurationMinutes) }
-    var liveStatusMessage by remember { mutableStateOf("Partying at Venue 🍸") }
+    var liveStatusMessage by remember { mutableStateOf(userPrefs.liveStatusMessage) }
     var isSyncing by remember { mutableStateOf(false) }
 
     val liveSync = remember { FirebaseLiveSync(context) }
@@ -212,12 +214,48 @@ fun VenueCheckInScreen(
         }
     }
 
+    // Keep the background sync service in lockstep with the live-sharing toggle, including
+    // when this screen is (re)composed while a previous session is still live.
+    LaunchedEffect(isLiveSharing) {
+        val serviceIntent = Intent(context, LiveShareService::class.java)
+        if (isLiveSharing) {
+            val hasLocationPermission = context.checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
+                context.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (!hasLocationPermission) {
+                userPrefs.isLiveSharing = false
+                isLiveSharing = false
+                Toast.makeText(context, "Allow location access in app settings to share live location.", Toast.LENGTH_LONG).show()
+                return@LaunchedEffect
+            }
+            try {
+                androidx.core.content.ContextCompat.startForegroundService(context, serviceIntent)
+            } catch (e: IllegalStateException) {
+                userPrefs.isLiveSharing = false
+                isLiveSharing = false
+                Toast.makeText(context, "Open the app and try live sharing again.", Toast.LENGTH_LONG).show()
+                return@LaunchedEffect
+            } catch (e: SecurityException) {
+                userPrefs.isLiveSharing = false
+                isLiveSharing = false
+                return@LaunchedEffect
+            }
+            while (userPrefs.isLiveSharing) {
+                kotlinx.coroutines.delay(1000)
+            }
+            isLiveSharing = false
+        } else {
+            context.stopService(serviceIntent)
+        }
+    }
+
     // Function to push live location to Firebase
     fun syncToFirebase() {
         isSyncing = true
+        userPrefs.liveVenueName = venueNameInput
+        userPrefs.liveStatusMessage = liveStatusMessage
         coroutineScope.launch {
             val expiresAt = if (isLiveSharing) {
-                System.currentTimeMillis() + (selectedDurationMins * 60 * 1000L)
+                userPrefs.liveExpiresAt
             } else 0L
 
             val success = liveSync.syncSession(
