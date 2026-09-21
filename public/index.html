@@ -5,13 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TipsyBuddy - Live Night Out & Safety Tracker</title>
   
-  <!-- Leaflet CSS for OpenStreetMap (100% free open-source map) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -173,13 +166,27 @@
       <a href="privacy.html">Privacy Policy</a>
       <span>•</span>
       <a href="terms.html">Terms of Use</a>
+      <span>•</span>
+      <a href="cookies.html">Cookie Policy</a>
+      <span>•</span>
+      <button class="link-button" type="button" data-cookie-reset>Cookie Settings</button>
     </div>
     <p>Powered by <strong>TipsyBuddy</strong> • Free, Privacy-Focused & OpenStreetMap</p>
     <p class="disclaimer">BAC calculations are estimates for harm reduction and safety. Always drink responsibly and never drink & drive.</p>
   </footer>
 
-  <!-- Leaflet JS (Free OpenStreetMap library) -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <div id="cookieBanner" class="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie consent" hidden>
+    <div class="cookie-banner-text">
+      <strong>🍪 We use cookies.</strong>
+      <span>TipsyBuddy loads third-party services (maps, fonts, hosting) that may set cookies. <a href="cookies.html">Cookie Policy</a></span>
+    </div>
+    <div class="cookie-banner-actions">
+      <button class="btn btn-secondary btn-sm" type="button" data-cookie-reject>Reject</button>
+      <button class="btn btn-primary btn-sm" type="button" data-cookie-accept>Accept</button>
+    </div>
+  </div>
+
   <script src="app.js"></script>
+  <script src="cookie-consent.js" defer></script>
 </body>
 </html>

@@ -9,6 +9,28 @@ let currentSessionId = null;
 let updateInterval = null;
 let countdownInterval = null;
 let isSendingCheer = false;
+// Last known map position while Leaflet is blocked (cookie consent) or still loading.
+let pendingMapCoords = null;
+
+function isLeafletAvailable() {
+  try {
+    return typeof L !== "undefined" && !!L && typeof L.map === "function";
+  } catch (err) {
+    return false;
+  }
+}
+
+// Shown inside the map canvas when Leaflet is blocked until cookie consent.
+function showMapConsentNotice() {
+  try {
+    const mapEl = document.getElementById("liveMap");
+    if (mapEl && typeof mapEl.innerHTML !== "undefined") {
+      mapEl.innerHTML = "<div style=\"padding:24px;text-align:center;color:#94A3B8;font-size:13px;\">🗺️ Live map is paused until you accept optional cookies.<br/>All other tracker details still update below.</div>";
+    }
+  } catch (err) {
+    /* non-DOM test harness: ignore */
+  }
+}
 
 // Parse Query Parameters
 function getQueryParam(param) {
@@ -48,6 +70,18 @@ const trackSessionBtn = document.getElementById("trackSessionBtn");
 // Initialize Map
 function initMap(lat, lon) {
   if (map) return;
+
+  if (!isLeafletAvailable()) {
+    pendingMapCoords = { lat, lon };
+    showMapConsentNotice();
+    return;
+  }
+
+  try {
+    document.getElementById("liveMap").innerHTML = "";
+  } catch (err) {
+    /* non-DOM test harness: ignore */
+  }
 
   map = L.map('liveMap', {
     zoomControl: false,
@@ -99,17 +133,33 @@ function initMap(lat, lon) {
   });
 
   friendMarker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
+  pendingMapCoords = null;
 }
 
 // Update Map Position
 function updateMapPosition(lat, lon, venue, userName) {
+  if (!isLeafletAvailable()) {
+    pendingMapCoords = { lat, lon, venue, userName };
+    try {
+      coordsDisplay.textContent = `Lat: ${Number(lat).toFixed(4)}, Lon: ${Number(lon).toFixed(4)}`;
+    } catch (err) {
+      /* non-DOM test harness: ignore */
+    }
+    showMapConsentNotice();
+    return;
+  }
   if (!map) {
     initMap(lat, lon);
+    if (!map) {
+      pendingMapCoords = { lat, lon, venue, userName };
+      return;
+    }
   } else {
     friendMarker.setLatLng([lat, lon]);
     map.panTo([lat, lon]);
   }
 
+  if (!friendMarker) return;
   friendMarker.bindPopup(`
     <div style="color: #000; font-family: sans-serif; font-size: 12px; padding: 4px;">
       <strong style="font-size: 14px;">${userName || 'Friend'}</strong><br/>
@@ -117,6 +167,27 @@ function updateMapPosition(lat, lon, venue, userName) {
       <small style="color: #666;">Live updating</small>
     </div>
   `);
+}
+
+// Retry a deferred map init once Leaflet finishes loading after consent.
+function retryPendingMap() {
+  if (map || !pendingMapCoords || !isLeafletAvailable()) return;
+  const p = pendingMapCoords;
+  updateMapPosition(p.lat, p.lon, p.venue, p.userName);
+}
+
+try {
+  if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+    document.addEventListener("tipsybuddy-leaflet-ready", retryPendingMap);
+  }
+  if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+    window.addEventListener("tipsybuddy-leaflet-ready", retryPendingMap);
+    window.addEventListener("tipsybuddy-cookie-consent", (e) => {
+      if (e && e.detail && e.detail.optional) retryPendingMap();
+    });
+  }
+} catch (err) {
+  /* non-DOM test harness: ignore */
 }
 
 // Parse Firestore Document Fields

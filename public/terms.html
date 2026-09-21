@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Terms of Use - TipsyBuddy</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Site fonts load only after optional-cookie consent (see cookie-consent.js). -->
   <link rel="stylesheet" href="style.css">
   <style>
     .legal-card {
@@ -95,7 +93,7 @@
     <a class="back-link" href="index.html">← Back to Tracker</a>
     <div class="legal-card">
       <h1>Terms of Use</h1>
-      <p class="updated">Last updated: September 20, 2026</p>
+      <p class="updated">Last updated: September 21, 2026</p>
 
       <p>Welcome to TipsyBuddy! By using the TipsyBuddy app or this website, you agree to these Terms. If you don't agree, please don't use the service.</p>
 
@@ -130,19 +128,22 @@
       <h2>6. Third-party services</h2>
       <p>TipsyBuddy links to or embeds third-party services such as OpenStreetMap, Uber, Lyft, Firebase/Google hosting, and your phone dialer. Those services have their own terms and privacy policies, and we aren't responsible for them. Ride availability, pricing, and arrival times are set by those providers.</p>
 
-      <h2>7. Availability and changes</h2>
+      <h2>7. Cookies and consent</h2>
+      <p>The TipsyBuddy website shows a cookie banner asking you to accept or reject non-essential cookies. We don't set first-party tracking cookies ourselves, but the tracker page relies on third-party services (hosting, maps, fonts) that may set their own cookies. By accepting, you agree to those providers' cookies as described in our <a href="cookies.html">Cookie Policy</a>; if you reject, we record that preference and add no optional tracking of our own, though the third-party content needed for the page to work may still set cookies. You can change your choice anytime via the "Cookie Settings" link in the footer.</p>
+
+      <h2>8. Availability and changes</h2>
       <p>We provide TipsyBuddy "as is" and do our best to keep it running, but we can't guarantee it will always be available, accurate, or error-free. We may update, pause, or discontinue features at any time.</p>
 
-      <h2>8. Limitation of liability</h2>
+      <h2>9. Limitation of liability</h2>
       <p>To the maximum extent allowed by law, TipsyBuddy and its contributors are not liable for any damages arising from your use of the app or website, including decisions you make about drinking, driving, or travel. You use the service at your own risk and are responsible for your own safety and compliance with the law.</p>
 
-      <h2>9. Changes to these Terms</h2>
+      <h2>10. Changes to these Terms</h2>
       <p>We may update these Terms from time to time. We'll post the new version on this page with a new "Last updated" date. Continued use after changes means you accept them.</p>
 
-      <h2>10. Contact</h2>
+      <h2>11. Contact</h2>
       <p>Questions about these Terms? Open an issue on our GitHub repository: <a href="https://github.com/chartmann1590/TipsyBuddy">github.com/chartmann1590/TipsyBuddy</a>.</p>
 
-      <p style="margin-top:16px;">Related: <a href="privacy.html">Privacy Policy</a></p>
+      <p style="margin-top:16px;">Related: <a href="privacy.html">Privacy Policy</a> • <a href="cookies.html">Cookie Policy</a></p>
     </div>
   </main>
 
@@ -153,9 +154,24 @@
       <a href="privacy.html">Privacy Policy</a>
       <span>•</span>
       <a href="terms.html">Terms of Use</a>
+      <span>•</span>
+      <a href="cookies.html">Cookie Policy</a>
+      <span>•</span>
+      <button class="link-button" type="button" data-cookie-reset>Cookie Settings</button>
     </div>
     <p>Powered by <strong>TipsyBuddy</strong> • Free, Privacy-Focused & OpenStreetMap</p>
     <p class="disclaimer">BAC calculations are estimates for harm reduction and safety. Always drink responsibly and never drink &amp; drive.</p>
   </footer>
+  <div id="cookieBanner" class="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie consent" hidden>
+    <div class="cookie-banner-text">
+      <strong>🍪 We use cookies.</strong>
+      <span>TipsyBuddy loads third-party services (maps, fonts, hosting) that may set cookies. <a href="cookies.html">Cookie Policy</a></span>
+    </div>
+    <div class="cookie-banner-actions">
+      <button class="btn btn-secondary btn-sm" type="button" data-cookie-reject>Reject</button>
+      <button class="btn btn-primary btn-sm" type="button" data-cookie-accept>Accept</button>
+    </div>
+  </div>
+  <script src="cookie-consent.js" defer></script>
 </body>
 </html>
