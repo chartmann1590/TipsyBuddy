@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Privacy Policy - TipsyBuddy</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Site fonts load only after optional-cookie consent (see cookie-consent.js). -->
   <link rel="stylesheet" href="style.css">
   <style>
     .legal-card {
@@ -87,7 +85,7 @@
     <a class="back-link" href="index.html">← Back to Tracker</a>
     <div class="legal-card">
       <h1>Privacy Policy</h1>
-      <p class="updated">Last updated: September 20, 2026</p>
+      <p class="updated">Last updated: September 21, 2026</p>
 
       <p>TipsyBuddy is built to help you have a fun night out and get home safely — without giving up your privacy. This policy explains in plain language what we collect, why, and the choices you have.</p>
 
@@ -125,10 +123,21 @@
         <li><strong>Ads (in the Android app):</strong> the app may show ads via Google AdMob. AdMob may collect device identifiers to serve and measure ads. You can learn more in Google's advertising privacy info.</li>
       </ul>
 
-      <h2>6. How long we keep data</h2>
+      <h2>6. Cookies</h2>
+      <p>TipsyBuddy does not set any first-party tracking cookies and does not profile or sell your data. The tracker page does, however, rely on third-party services that may set cookies of their own. Your consent choice is stored in your browser's <strong>localStorage</strong> under <code>tipsybuddy_cookie_consent_v1</code> (not in a cookie), so saving a choice simply dismisses the banner.</p>
+      <p>Third-party services that may set cookies when you visit the tracker page:</p>
+      <ul>
+        <li><strong>Firebase (Hosting &amp; Firestore) / Google</strong> — serves the page and streams live updates.</li>
+        <li><strong>OpenStreetMap tiles</strong> — serves the map tiles shown on the live map.</li>
+        <li><strong>Leaflet (unpkg CDN)</strong> — delivers the Leaflet CSS/JS used to render the map; only loaded if you accept optional cookies.</li>
+        <li><strong>Google Fonts</strong> — provides the site fonts; only loaded if you accept optional cookies.</li>
+      </ul>
+      <p>See our full <a href="cookies.html">Cookie Policy</a> for details. Change your choice anytime with the <em>Cookie Settings</em> link in the footer.</p>
+
+      <h2>7. How long we keep data</h2>
       <p>Live session data is kept only to operate active sharing and for a short period afterward to handle expired links gracefully. Data on your phone stays there until you delete it in the app or uninstall the app.</p>
 
-      <h2>7. Your choices</h2>
+      <h2>8. Your choices</h2>
       <ul>
         <li>Don't turn on Live Sharing if you don't want to share your location — everything else in the app works without it.</li>
         <li>Only send live links to people you trust.</li>
@@ -137,14 +146,16 @@
         <li>You can deny location permission — sharing just won't work without it.</li>
       </ul>
 
-      <h2>8. Drinking age</h2>
+      <h2>9. Drinking age</h2>
       <p>TipsyBuddy is intended only for adults of legal drinking age in their location. We do not knowingly collect data from children.</p>
 
-      <h2>9. Changes to this policy</h2>
+      <h2>10. Changes to this policy</h2>
       <p>If we change this policy, we'll update the date above and post the new version on this page.</p>
 
-      <h2>10. Contact us</h2>
+      <h2>11. Contact us</h2>
       <p>Questions about privacy? Open an issue on our GitHub repository: <a href="https://github.com/chartmann1590/TipsyBuddy">github.com/chartmann1590/TipsyBuddy</a>.</p>
+
+      <p style="margin-top:16px;">Related: <a href="terms.html">Terms of Use</a> &bull; <a href="cookies.html">Cookie Policy</a></p>
     </div>
   </main>
 
@@ -155,9 +166,26 @@
       <a href="privacy.html">Privacy Policy</a>
       <span>•</span>
       <a href="terms.html">Terms of Use</a>
+      <span>•</span>
+      <a href="cookies.html">Cookie Policy</a>
+      <span>•</span>
+      <button class="link-button" type="button" data-cookie-reset>Cookie Settings</button>
     </div>
     <p>Powered by <strong>TipsyBuddy</strong> • Free, Privacy-Focused & OpenStreetMap</p>
     <p class="disclaimer">BAC calculations are estimates for harm reduction and safety. Always drink responsibly and never drink &amp; drive.</p>
   </footer>
+
+  <div id="cookieBanner" class="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie consent" hidden>
+    <div class="cookie-banner-text">
+      <strong>🍪 We use cookies.</strong>
+      <span>TipsyBuddy loads third-party services (maps, fonts, hosting) that may set cookies. <a href="cookies.html">Cookie Policy</a></span>
+    </div>
+    <div class="cookie-banner-actions">
+      <button class="btn btn-secondary btn-sm" type="button" data-cookie-reject>Reject</button>
+      <button class="btn btn-primary btn-sm" type="button" data-cookie-accept>Accept</button>
+    </div>
+  </div>
+
+  <script src="cookie-consent.js" defer></script>
 </body>
 </html>
