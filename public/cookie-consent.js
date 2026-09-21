@@ -51,28 +51,50 @@
     }
   }
 
+  function notifyLeafletReady() {
+    try {
+      var evt = new CustomEvent("tipsybuddy-leaflet-ready");
+      if (typeof document !== "undefined" && document.dispatchEvent) {
+        document.dispatchEvent(evt);
+      }
+      if (typeof window !== "undefined" && window.dispatchEvent) {
+        window.dispatchEvent(evt);
+      }
+    } catch (err) {
+      /* older browsers: app.js will still work once Leaflet is cached */
+    }
+  }
+
   function loadOptionalResources() {
+    if (document.getElementById("tipsy-leaflet-js")) {
+      notifyLeafletReady();
+      return;
+    }
     if (document.getElementById("tipsy-leaflet-css")) return;
     var css = document.createElement("link");
     css.rel = "stylesheet";
     css.id = "tipsy-leaflet-css";
     css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    css.crossOrigin = "";
+    css.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+    css.crossOrigin = "anonymous";
     document.head.appendChild(css);
 
     var preconnect1 = document.createElement("link");
     preconnect1.rel = "preconnect";
+    preconnect1.id = "tipsy-preconnect-fonts";
     preconnect1.href = "https://fonts.googleapis.com";
     document.head.appendChild(preconnect1);
 
     var preconnect2 = document.createElement("link");
     preconnect2.rel = "preconnect";
+    preconnect2.id = "tipsy-preconnect-gstatic";
     preconnect2.href = "https://fonts.gstatic.com";
-    preconnect2.crossOrigin = "";
+    preconnect2.crossOrigin = "anonymous";
     document.head.appendChild(preconnect2);
 
     var fonts = document.createElement("link");
     fonts.rel = "stylesheet";
+    fonts.id = "tipsy-fonts-css";
     fonts.href = "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap";
     document.head.appendChild(fonts);
 
@@ -80,7 +102,8 @@
     leafletScript.id = "tipsy-leaflet-js";
     leafletScript.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
     leafletScript.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
-    leafletScript.crossOrigin = "";
+    leafletScript.crossOrigin = "anonymous";
+    leafletScript.onload = notifyLeafletReady;
     document.head.appendChild(leafletScript);
   }
 
