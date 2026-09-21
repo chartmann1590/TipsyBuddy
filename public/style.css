@@ -662,6 +662,56 @@ body {
   margin: 6px auto 0 auto;
 }
 
+/* Cookie consent banner */
+.cookie-banner {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2000;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 680px;
+  margin: 0 auto;
+  background: rgba(19, 26, 42, 0.97);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+.cookie-banner[hidden] {
+  display: none !important;
+}
+
+.cookie-banner-text {
+  flex: 1 1 240px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cookie-banner-text strong {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.cookie-banner-text a {
+  color: var(--accent-neon);
+  font-weight: 600;
+}
+
+.cookie-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* Responsive tweaks */
 @media (max-width: 480px) {
   .input-row {
