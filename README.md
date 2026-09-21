@@ -1,144 +1,78 @@
-# 🍻 TipsyBuddy — Your Fun & Safe Drinking Companion
+# 🍻 TipsyBuddy — Party Smart, Get Home Safe
 
-> **"Party smart, get home safe."**  
-> TipsyBuddy is a modern Android app and companion web service designed for nightlife harm reduction, drink tracking, sobriety estimation, and real-time location sharing with friends.
+TipsyBuddy is your fun, friendly night-out companion. Keep track of your drinks, see how you're doing through the night, share your live location with friends, and get home safely.
 
-[![Android](https://img.shields.io/badge/Platform-Android%208.0%2B-brightgreen.svg)](https://android.com)
-[![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20Material%203-blue.svg)](https://developer.android.com/jetpack/compose)
-[![Hosting](https://img.shields.io/badge/Hosting-Firebase%20Spark-orange.svg)](https://tipsybuddy.web.app)
-[![Maps](https://img.shields.io/badge/Maps-OpenStreetMap%20(100%25%20Free)-green.svg)](https://www.openstreetmap.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+**Try the live friend tracker:** [tipsybuddy.web.app](https://tipsybuddy.web.app)
+
+No account needed for friends — if someone shares their night out with you, you just open the link in any browser.
 
 ---
 
-## 🌐 Live Web Companion
+## Why you'll love it
 
-- **Public Web App**: [https://tipsybuddy.web.app](https://tipsybuddy.web.app)
-- **Live Session Tracking Link**: `https://tipsybuddy.web.app/?session=<SESSION_CODE>`
-- **Hosting & Database**: Firebase Spark Free Tier with Firestore REST API.
+- **Know where you stand** — a simple gauge shows how the night is going and roughly when you'll feel sober again.
+- **Log drinks in one tap** — Beer, Wine, Cocktail, Shot, or Water. Add your own custom drinks too, including cost so you can keep an eye on your tab.
+- **Stay hydrated, feel better tomorrow** — TipsyBuddy nudges you to drink water and gives you a simple heads-up about tomorrow's hangover risk, with easy recovery tips.
+- **Check in to your bar** — save where you are in one tap so friends can find you.
+- **Share your night live** — send friends a live map link for 30 minutes up to 4 hours. They'll see your location, venue, and battery level. They can even send you a quick "check in" wave or help order you a ride.
+- **Get home safe** — one-tap buttons for Uber and Lyft, plus a quick dial for your trusted contact or emergency help.
+- **Look back** — a simple calendar shows light, moderate, heavy, and sober days, plus your sober streaks and monthly spending.
 
-Friends don't need to install any app to track you. When you turn on Live Sharing, TipsyBuddy generates a link that friends can open in any browser to see your live GPS location on an OpenStreetMap, current venue, estimated BAC, battery level, and direct buttons to dispatch an Uber or Lyft to your location.
-
----
-
-## ✨ Features
-
-### 🍸 1. Tonight Dashboard
-- **Live Circular BAC Gauge**: Real-time bio-alcohol estimation powered by the scientific Widmark formula.
-- **Sobriety Clock**: Calculates countdown hours and exact estimated time of return to 0.00% BAC.
-- **Smart Taxi Suggestion**: Automatically prompts a ride home when approaching "Tipsy" ($0.04\%$) or "Intoxicated" ($0.08\%$) levels.
-- **Quick-Add Bar**: Instant 1-tap buttons for Beer, Wine, Cocktails, Shots, and Water.
-
-### 📝 2. Drink Logger & Custom Drink Builder
-- Preset categories with standard drink calculations based on ABV and volume (oz).
-- Custom drink modal to specify beverage name, category, volume, ABV %, and cost for tab tracking.
-- Interactive timeline with timestamps and delete functionality.
-
-### 📅 3. Drinking Calendar & History
-- Visual monthly grid color-coded by drinking intensity:
-  - 🟢 **Light** ($< 0.04\%$ BAC)
-  - 🟡 **Moderate** ($0.04\% - 0.08\%$ BAC)
-  - 🔴 **Heavy** ($> 0.08\%$ BAC)
-  - 🟣 **Sober Days**
-- Monthly recap: Total drinking days, sober streaks, and total monthly spending tab.
-- Tap any calendar day to inspect the exact drinks logged and peak BAC.
-
-### 🩺 4. Health & Sobriety Insights
-- **Widmark Bio-Alcohol Formula**: Tailored to user body weight and biological sex.
-- **Hydration Score**: Tracks water intake vs. alcohol consumption with clinical guidance.
-- **Hangover Risk Index**: Next-day risk forecast with evidence-based recovery tips (electrolytes, carbohydrates, sleep).
-
-### 📍 5. Bar Check-In & Live Location Sharing
-- **1-Tap Bar Check-In**: Uses device GPS and Android's native `Geocoder` for free reverse geocoding.
-- **Embedded OpenStreetMap**: In-app native map view via OSMDroid (`org.osmdroid:osmdroid-android`).
-- **Live Sharing Timer**: Share your live location with friends for **30 min, 1 hour, 2 hours, or 4 hours**.
-- **Real-Time REST Sync**: Pushes coordinates, battery %, and BAC directly to Firebase Firestore via REST.
-- **Background Sharing**: A location foreground service keeps updates running after leaving the check-in screen, with an ongoing notification and the saved sharing deadline.
-- **Friend Check-In Waves**: Website visitors can send a wave that appears as a phone notification when notifications are allowed. Partial Firestore updates preserve waves during location sync.
-- **Android Share Sheet**: 1-tap SMS or WhatsApp sharing of your live web tracker link.
-
-### 🚖 6. Safe Ride Home (Uber & Lyft Integration)
-- **Pre-filled Home Address**: Pulls your saved home address from your profile.
-- **Deep Links**: Direct dispatch intents (`uber://` and `lyft://`) with web fallback.
-- **In-App Fare Estimates**: Calibrated fare estimates for UberX, UberXL, Lyft, and Lyft XL with late-night surge pricing models.
-- **Emergency / Designated Driver Quick Dial**: 1-tap phone dialer for a trusted contact.
-
-### 👤 7. Profile & Settings
-- Customizable user biometrics (weight in lbs, biological sex).
-- Saved home destination address with automatic geocoding.
-- Designated friend emergency contact name and phone number.
-- Reset session ID and data management tools.
+Friends open your live link on any phone or computer. No app install, no sign-up.
 
 ---
 
-## 💰 100% Free Architecture (Zero Paid APIs)
+## How live sharing works
 
-| Component | Free Solution | Cost |
-| :--- | :--- | :--- |
-| **Companion Web Map** | Leaflet.js + standard OpenStreetMap tiles (no API key) | **$0.00** |
-| **Android In-App Map** | OSMDroid (`org.osmdroid:osmdroid-android`) | **$0.00** |
-| **Geocoding** | Android Native `android.location.Geocoder` | **$0.00** |
-| **Live Database & Sync** | Firebase Firestore REST API on Spark Free Tier | **$0.00** |
-| **Web Hosting** | Firebase Hosting Free Tier (`tipsybuddy.web.app`) | **$0.00** |
-| **Rides & Navigation** | Native Deep Link URI Intents (`uber://` & `lyft://`) | **$0.00** |
+1. In the TipsyBuddy app, tap **Share Live** and pick how long to share.
+2. Send the link to friends by text, WhatsApp, or any app.
+3. Friends open the link to see your live map, venue, and status — and can order an Uber/Lyft to your location, call you, or send a wave.
+4. Sharing stops automatically when the timer ends, or you can stop it anytime.
+
+Only people you send the link to can see you, and only while sharing is on.
 
 ---
 
-## 🏗️ Technical Stack
+## Get the app
 
-- **Android Client**:
-  - Language: Kotlin 1.9.23
-  - Framework: Jetpack Compose with Material 3
-  - Architecture: Unidirectional Data Flow (UDF), MVVM
-  - Database: Room SQLite with Kotlin Coroutines & Flow
-  - Networking: OkHttp 4.12.0 (Direct REST to Firestore)
-  - Mapping: OSMDroid 6.1.18 (OpenStreetMap)
-- **Web Companion**:
-  - HTML5, CSS3 (Midnight Dark Theme), Vanilla JavaScript
-  - Map Engine: Leaflet.js 1.9.4 with standard OpenStreetMap tiles and visible attribution
-  - API: Firestore v1 REST API (Spark Free Tier)
-  - CLI: Firebase CLI 15.x
+TipsyBuddy is an Android app (Android 8.0 and up), with a companion web tracker that works in any browser.
+
+- **Android app:** available in this repository — download the latest release APK and install on your phone.
+- **Live tracker for friends:** [tipsybuddy.web.app](https://tipsybuddy.web.app/?session=YOUR-CODE) — just replace `YOUR-CODE` with the code from the app.
+
+Coming soon to Google Play.
 
 ---
 
-## 🚀 Getting Started
+## Safety first 💛
 
-### Android App
+TipsyBuddy helps you make smarter choices, but it can't tell you if you're sober enough to drive — and no app can.
 
-1. **Prerequisites**: Android Studio Ladybug / Koala or Android SDK with command-line tools.
-2. **Clone Repository**:
-   ```bash
-   git clone https://github.com/chartmann1590/TipsyBuddy.git
-   cd TipsyBuddy
-   ```
-3. **Build APK**:
-   ```bash
-   ./gradlew assembleDebug
-   ```
-4. **Install on Connected Device**:
-   ```bash
-   adb install -r app/build/outputs/apk/debug/app-debug.apk
-   ```
+- Estimates are rough guides only. Food, sleep, medications, and lots of other things affect how alcohol hits you.
+- **Never drink and drive.** Always use a designated driver, taxi, or rideshare.
+- If someone needs urgent help, call your local emergency number right away.
 
-### Firebase Web Companion
-
-1. **Install Firebase CLI**:
-   ```bash
-   npm install -g firebase-tools
-   ```
-2. **Deploy Hosting & Security Rules**:
-   ```bash
-   firebase deploy --only hosting,firestore:rules
-   ```
-
-### Validation
-
-- Run the web sync regression tests with `node --test tests/web-sync.test.cjs`.
-- With JDK 17, run `./gradlew :app:assembleDebug :wear:assembleDebug :app:lintDebug :wear:lintDebug`.
-- For live sharing, verify on a phone that location updates continue after backgrounding, waves produce notifications, and turning sharing off or reaching its deadline stops the service. Check both approximate location access and denied permissions.
+Please enjoy responsibly and look out for each other.
 
 ---
 
-## ⚠️ Disclaimer
+## Your privacy
 
-BAC calculations and sobriety times provided by TipsyBuddy are mathematical estimates based on the Widmark formula and are intended solely for personal harm reduction and informational purposes. Individual metabolism, food consumption, medications, and other physiological factors affect alcohol absorption and clearance. **Never drink and drive under any circumstances.**
+TipsyBuddy is privacy-focused:
+
+- Your data stays on your phone unless you choose to share your live location.
+- Live links only work for the time you choose, and only for people you send them to.
+- We don't sell your personal information.
+
+Read the full details here:
+
+- [Privacy Policy](https://tipsybuddy.web.app/privacy.html)
+- [Terms of Use](https://tipsybuddy.web.app/terms.html)
+
+---
+
+## Questions or feedback?
+
+We'd love to hear from you! Open an issue here on GitHub to report a problem, suggest a feature, or just say hi.
+
+Have a great — and safe — night out. 🍻
