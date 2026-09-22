@@ -93,7 +93,7 @@
     <a class="back-link" href="index.html">← Back to Tracker</a>
     <div class="legal-card">
       <h1>Terms of Use</h1>
-      <p class="updated">Last updated: September 21, 2026</p>
+      <p class="updated">Last updated: September 22, 2026</p>
 
       <p>Welcome to TipsyBuddy! By using the TipsyBuddy app or this website, you agree to these Terms. If you don't agree, please don't use the service.</p>
 
@@ -109,6 +109,7 @@
         <li>Helps you log drinks, see estimates of how alcohol may be affecting you, and review your history.</li>
         <li>Lets you voluntarily share your live location, venue, and status with friends via a private link.</li>
         <li>Provides quick links to rideshare services (Uber, Lyft), calling, and maps to help you get home.</li>
+        <li>Offers an optional in-app Support &amp; Feedback form that files your bug report as a GitHub issue (with optional screenshot and diagnostics) via our Cloudflare Worker proxy.</li>
       </ul>
 
       <h2>3. Estimates are not advice</h2>
@@ -122,25 +123,34 @@
         <li>Remember that anyone you send the link to can forward it to others while sharing is active.</li>
       </ul>
 
-      <h2>5. Acceptable use</h2>
-      <p>Please don't misuse the service — including trying to break it, access other people's sessions by guessing links, send spam waves, or interfere with other users.</p>
+      <h2>5. Support &amp; feedback reports</h2>
+      <p>The in-app <strong>Report a Problem</strong> form is voluntary. When you tap Submit, the app sends your title, description, optional name/email, optional screenshot (max ~8 MB), optional diagnostics (app version, device model/brand, Android version, locale, time zone, storage/memory stats), and any follow-up replies through our Cloudflare Worker to the GitHub REST API, where it is stored as an issue/comment and attachment in the <strong>chartmann1590/TipsyBuddy</strong> repository (see our <a href="privacy.html">Privacy Policy</a> for details).</p>
+      <ul>
+        <li><strong>Public visibility:</strong> if the repository is public, your report, replies, and screenshots may be publicly visible. Do not submit passwords, keys, medical/financial data, credentials, or other sensitive or personal information.</li>
+        <li><strong>Your responsibilities:</strong> only submit content you have the right to share; don't submit unlawful, infringing, harassing, or abusive material, spam, or someone else's private information.</li>
+        <li><strong>License to use feedback:</strong> by submitting, you give TipsyBuddy and its contributors a non-exclusive, worldwide, royalty-free license to reproduce, discuss, and use your report to fix bugs and improve the app.</li>
+        <li><strong>No promises:</strong> submitting a report does not guarantee a response, a fix, or any timeline. Maintainers may edit, label, close, or remove reports at their discretion.</li>
+      </ul>
 
-      <h2>6. Third-party services</h2>
-      <p>TipsyBuddy links to or embeds third-party services such as OpenStreetMap, Uber, Lyft, Firebase/Google hosting, and your phone dialer. Those services have their own terms and privacy policies, and we aren't responsible for them. Ride availability, pricing, and arrival times are set by those providers.</p>
+      <h2>6. Acceptable use</h2>
+      <p>Please don't misuse the service — including trying to break it, access other people's sessions by guessing links, send spam waves, flood the feedback reporter with automated or abusive submissions, submit sensitive data or someone else's private information in reports, or interfere with other users.</p>
 
-      <h2>7. Cookies and consent</h2>
+      <h2>7. Third-party services</h2>
+      <p>TipsyBuddy links to or embeds third-party services such as OpenStreetMap, Uber, Lyft, Firebase/Google hosting, Cloudflare Workers (feedback proxy), GitHub (issue tracker and attachment storage), and your phone dialer. Those services have their own terms and privacy policies, and we aren't responsible for them. Ride availability, pricing, and arrival times are set by those providers.</p>
+
+      <h2>8. Cookies and consent</h2>
       <p>The TipsyBuddy website shows a cookie banner asking you to accept or reject non-essential cookies. We don't set first-party tracking cookies ourselves, but the tracker page relies on third-party services (hosting, maps, fonts) that may set their own cookies. By accepting, you agree to those providers' cookies as described in our <a href="cookies.html">Cookie Policy</a>; if you reject, we record that preference and add no optional tracking of our own, though the third-party content needed for the page to work may still set cookies. You can change your choice anytime via the "Cookie Settings" link in the footer.</p>
 
-      <h2>8. Availability and changes</h2>
+      <h2>9. Availability and changes</h2>
       <p>We provide TipsyBuddy "as is" and do our best to keep it running, but we can't guarantee it will always be available, accurate, or error-free. We may update, pause, or discontinue features at any time.</p>
 
-      <h2>9. Limitation of liability</h2>
+      <h2>10. Limitation of liability</h2>
       <p>To the maximum extent allowed by law, TipsyBuddy and its contributors are not liable for any damages arising from your use of the app or website, including decisions you make about drinking, driving, or travel. You use the service at your own risk and are responsible for your own safety and compliance with the law.</p>
 
-      <h2>10. Changes to these Terms</h2>
+      <h2>11. Changes to these Terms</h2>
       <p>We may update these Terms from time to time. We'll post the new version on this page with a new "Last updated" date. Continued use after changes means you accept them.</p>
 
-      <h2>11. Contact</h2>
+      <h2>12. Contact</h2>
       <p>Questions about these Terms? Open an issue on our GitHub repository: <a href="https://github.com/chartmann1590/TipsyBuddy">github.com/chartmann1590/TipsyBuddy</a>.</p>
 
       <p style="margin-top:16px;">Related: <a href="privacy.html">Privacy Policy</a> • <a href="cookies.html">Cookie Policy</a></p>
