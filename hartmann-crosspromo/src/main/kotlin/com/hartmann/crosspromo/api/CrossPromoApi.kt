@@ -23,6 +23,12 @@ internal class CrossPromoApi(
     private val connectTimeoutMs: Int = 8_000,
     private val readTimeoutMs: Int = 8_000,
 ) {
+    init {
+        require(baseUrl.trim().startsWith("https://")) {
+            "baseUrl must use https://"
+        }
+    }
+
     private val json = Json {
         ignoreUnknownKeys = true // forward compatibility with backend additions
         isLenient = true
