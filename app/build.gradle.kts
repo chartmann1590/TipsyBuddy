@@ -83,7 +83,7 @@ android {
         //   1. Gradle property  -P feedback.worker.url (or ~/.gradle/gradle.properties)
         //   2. Environment      FEEDBACK_WORKER_URL
         //   3. local.properties feedback.worker.url (gitignored, local dev only)
-        //   4. Fallback: "" (unconfigured — app still compiles, submission disabled).
+        //   4. Fallback: deployed production Worker URL (non-secret).
         // Never put a GitHub PAT here; Android holds no GitHub credentials.
         val feedbackWorkerUrl = run {
             val fromGradle = project.findProperty("feedback.worker.url")?.toString()?.trim()
@@ -92,7 +92,7 @@ android {
             if (!fromEnv.isNullOrBlank()) return@run fromEnv
             val fromLocal = localAdMobProps.getProperty("feedback.worker.url")?.trim()
             if (!fromLocal.isNullOrBlank()) return@run fromLocal
-            ""
+            "https://tipsybuddy-feedback-api.charles-h-hartmann1.workers.dev"
         }
         buildConfigField("String", "FEEDBACK_WORKER_URL", "\"$feedbackWorkerUrl\"")
     }
