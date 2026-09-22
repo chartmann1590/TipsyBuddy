@@ -179,7 +179,7 @@ class HartmannPromoView @JvmOverloads constructor(
             if (!app.iconUrl.isNullOrBlank()) {
                 load(app.iconUrl) { crossfade(true) }
             } else {
-                setImageResource(android.R.drawable.sym_def_app_icon)
+                setImageResource(R.drawable.hcp_default_app_icon)
             }
         })
 
