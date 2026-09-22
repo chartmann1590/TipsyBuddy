@@ -35,18 +35,21 @@ internal class CrossPromoRepository(
 ) {
     private val _states = mutableMapOf<String, MutableStateFlow<PromoState>>()
     private val inFlight = mutableSetOf<String>()
+    private val lock = Any()
 
     fun observe(placement: String, limit: Int): StateFlow<PromoState> {
-        return _states.getOrPut(placement) { MutableStateFlow(PromoState.Loading) }.also {
-            refresh(placement, limit)
-        }.asStateFlow()
+        return synchronized(lock) {
+            _states.getOrPut(placement) { MutableStateFlow(PromoState.Loading) }
+        }.also { refresh(placement, limit) }.asStateFlow()
     }
 
     fun refresh(placement: String, limit: Int) {
-        if (!inFlight.add(placement)) return
+        if (!synchronized(lock) { inFlight.add(placement) }) return
         scope.launch {
             try {
-                val state = _states.getOrPut(placement) { MutableStateFlow(PromoState.Loading) }
+                val state = synchronized(lock) {
+                    _states.getOrPut(placement) { MutableStateFlow(PromoState.Loading) }
+                }
                 // 1) Instant cached content.
                 val cached = withContext(Dispatchers.IO) { cache.readCached(placement) }
                 val cachedResponse = cached?.rawBody?.let(api::parseResponse)
@@ -62,7 +65,7 @@ internal class CrossPromoRepository(
                     if (state.value is PromoState.Loading) state.value = PromoState.Empty
                 }
             } finally {
-                inFlight.remove(placement)
+                synchronized(lock) { inFlight.remove(placement) }
             }
         }
     }
