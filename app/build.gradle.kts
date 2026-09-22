@@ -95,6 +95,22 @@ android {
             "https://tipsybuddy-feedback-api.charles-h-hartmann1.workers.dev"
         }
         buildConfigField("String", "FEEDBACK_WORKER_URL", "\"$feedbackWorkerUrl\"")
+
+        // Dynamic cross-promotion backend URL (non-secret). Resolution order:
+        //   1. Gradle property  -P crosspromo.api.url (or ~/.gradle/gradle.properties)
+        //   2. Environment      CROSSPROMO_API_URL
+        //   3. local.properties crosspromo.api.url (gitignored, local dev only)
+        //   4. Fallback: "" (SDK stays uninitialized; Settings keeps legacy list).
+        val crossPromoUrl = run {
+            val fromGradle = project.findProperty("crosspromo.api.url")?.toString()?.trim()
+            if (!fromGradle.isNullOrBlank()) return@run fromGradle
+            val fromEnv = System.getenv("CROSSPROMO_API_URL")?.trim()
+            if (!fromEnv.isNullOrBlank()) return@run fromEnv
+            val fromLocal = localAdMobProps.getProperty("crosspromo.api.url")?.trim()
+            if (!fromLocal.isNullOrBlank()) return@run fromLocal
+            ""
+        }
+        buildConfigField("String", "CROSS_PROMO_URL", "\"$crossPromoUrl\"")
     }
 
     buildTypes {
@@ -199,6 +215,10 @@ dependencies {
     // In-app GitHub-backed feedback reporter (via Cloudflare Worker proxy)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.datastore.preferences)
+
+    // Hartmann Studios dynamic cross-promotion SDK (reusable module).
+    // No new permissions; no QUERY_ALL_PACKAGES; no ad IDs.
+    implementation(project(":hartmann-crosspromo"))
 
     // OpenStreetMap Android (100% free open-source map)
     implementation("org.osmdroid:osmdroid-android:6.1.18")

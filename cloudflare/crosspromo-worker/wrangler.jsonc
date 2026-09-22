@@ -1,0 +1,25 @@
+{
+  // Hartmann Studios Dynamic Cross-Promotion Platform — Cloudflare Worker.
+  // Persistence: Workers KV (zero-cost, no D1 required) + Cache API headers.
+  // Secrets (ADMIN_TOKEN) must be set via `wrangler secret put ADMIN_TOKEN`
+  // and must NEVER appear in this file.
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/configuration-schema.json",
+  "name": "hartmann-crosspromo-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-11-01",
+  "vars": {
+    "DEVELOPER_ID": "Hartmann Studios",
+    "DEVELOPER_PAGE_URL": "https://play.google.com/store/apps/developer?id=Hartmann+Studios"
+  },
+  "triggers": {
+    // Refresh the Play catalog every 6 hours. Recommendation serving never
+    // scrapes Google Play; it only reads the normalized cached catalog.
+    "crons": ["0 */6 * * *"]
+  },
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "bfbbe5a18dea4003a15e847c9adf8157"
+    }
+  ]
+}
