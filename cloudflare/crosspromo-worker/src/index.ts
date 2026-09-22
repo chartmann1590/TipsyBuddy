@@ -28,6 +28,12 @@ const MAX_BODY_BYTES = 64 * 1024;
 const buckets = new Map<string, { count: number; resetAt: number }>();
 function checkRateLimit(ip: string, max: number, windowMs: number): boolean {
   const now = Date.now();
+  // Periodic sweep: drop expired entries so the map doesn't grow unboundedly.
+  if (buckets.size > 1000) {
+    for (const [k, b] of buckets.entries()) {
+      if (now >= b.resetAt) buckets.delete(k);
+    }
+  }
   const b = buckets.get(ip);
   if (!b || now >= b.resetAt) {
     buckets.set(ip, { count: 1, resetAt: now + windowMs });
