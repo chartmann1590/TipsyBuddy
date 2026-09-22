@@ -21,8 +21,6 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
       # NOTE: ubuntu-latest runners already ship with the Android SDK
       # (ANDROID_HOME / ANDROID_SDK_ROOT preconfigured). The previously used
       # android-actions/setup-android@v3 step is deprecated and fails on
