@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hcp_view_app">View App</string>
+    <string name="hcp_more_from">More from Hartmann Studios</string>
+    <string name="hcp_rating">★ %1$.1f</string>
+</resources>

@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "TipsyBuddy"
 include(":app")
 include(":wear")
+include(":hartmann-crosspromo")

@@ -19,6 +19,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hartmann.crosspromo.HartmannCrossPromo
+import com.hartmann.crosspromo.ui.HartmannCrossPromoRow
 import com.tipsybuddy.app.ads.AdMobBanner
 import com.tipsybuddy.app.ads.OtherApp
 import com.tipsybuddy.app.ads.OtherAppsCatalog
@@ -151,16 +153,23 @@ fun ProfileSettingsScreen(
             }
         }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-            border = BorderStroke(1.dp, CardBorder)
-        ) {
-            Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(text = "OUR OTHER APPS", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp)
-                Text(text = "More apps from Charles — tap to open on Play Store", fontSize = 12.sp, color = TextSecondary)
-                OtherAppsCatalog.apps.forEach { app -> OtherAppRow(app = app) }
+        // Dynamic cross-promotion ("More from Hartmann Studios"). The backend
+        // discovers the live Play catalog, so new apps appear automatically.
+        // Falls back to the bundled legacy list while the SDK is unconfigured.
+        if (HartmannCrossPromo.isInitialized) {
+            HartmannCrossPromoRow(placement = "settings")
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+                border = BorderStroke(1.dp, CardBorder)
+            ) {
+                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(text = "OUR OTHER APPS", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp)
+                    Text(text = "More apps from Charles — tap to open on Play Store", fontSize = 12.sp, color = TextSecondary)
+                    OtherAppsCatalog.apps.forEach { app -> OtherAppRow(app = app) }
+                }
             }
         }
 

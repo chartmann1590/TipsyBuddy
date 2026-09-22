@@ -76,8 +76,8 @@ Thumbs.db
 .claude/settings.local.json
 .claude/*.local.json
 
-# Cloudflare Worker (feedback proxy) — never commit secrets or tool output
-cloudflare/feedback-worker/node_modules/
+# Cloudflare Workers — never commit secrets or tool output
+cloudflare/*/node_modules/
 cloudflare/feedback-worker/.dev.vars
 **/.dev.vars
 **/.wrangler/

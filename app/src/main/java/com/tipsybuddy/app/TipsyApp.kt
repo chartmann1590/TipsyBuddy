@@ -3,6 +3,7 @@ package com.tipsybuddy.app
 import android.app.Application
 import android.util.Log
 import com.google.android.gms.ads.MobileAds
+import com.hartmann.crosspromo.HartmannCrossPromo
 import com.tipsybuddy.app.ads.AdsConfig
 import com.tipsybuddy.app.ads.InterstitialAdManager
 import org.osmdroid.config.Configuration
@@ -28,6 +29,20 @@ class TipsyApp : Application() {
             InterstitialAdManager.preload(this)
         } catch (t: Throwable) {
             Log.w("TipsyAds", "MobileAds init failed (ads disabled): ${t.message}")
+        }
+
+        // Hartmann Studios dynamic cross-promotion (optional; silent when unconfigured).
+        // Source package is detected automatically from context.packageName.
+        try {
+            val crossPromoUrl = BuildConfig.CROSS_PROMO_URL
+            if (crossPromoUrl.isNotBlank()) {
+                HartmannCrossPromo.initialize(application = this, apiBaseUrl = crossPromoUrl)
+                Log.d("TipsyCrossPromo", "Cross-promo SDK initialized")
+            } else {
+                Log.d("TipsyCrossPromo", "Cross-promo unconfigured (CROSS_PROMO_URL blank)")
+            }
+        } catch (t: Throwable) {
+            Log.w("TipsyCrossPromo", "Cross-promo init failed (promos disabled): ${t.message}")
         }
     }
 }

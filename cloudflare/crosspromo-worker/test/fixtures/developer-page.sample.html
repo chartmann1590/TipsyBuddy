@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en-US">
+<head><title>Android Apps by Hartmann Studios on Google Play</title></head>
+<body>
+<!-- Minimal fixture modeled on the real developer page structure (Sep 2026):
+     canonical /store/apps/details?id= links, an &amp;-escaped link, a
+     JS-escaped AF payload, a slugged URL, duplicates, and junk links. -->
+<div class="apps">
+  <a href="/store/apps/details?id=com.auracast.weather" aria-label="AuraCast Weather">AuraCast</a>
+  <a href="/store/apps/details?id=com.charles.qrcode&amp;hl=en">QR Scanner</a>
+  <a href="/store/apps/details?id=com.charles.qrcode">QR Scanner duplicate</a>
+  <a href="/store/apps/details/TextPilot_AI_Smart_Messaging?id=com.charles.messenger.v2">TextPilot</a>
+  <a href="/store/apps/details?id=com.hartmann.pixeldream">PixelDream</a>
+  <a href="/store/apps/details?id=com.charles.qrcode">QR Scanner duplicate 2</a>
+  <a href="/store/search?q=tools&amp;c=apps">Search (not an app)</a>
+  <a href="/store/apps/details?id=com.google.android.gms">GMS (must be rejected)</a>
+  <a href="/store/apps/details?id=com.android.vending">Vending (must be rejected)</a>
+  <a href="/store/apps/details?id=not-a-valid!!id">Invalid (must be rejected)</a>
+</div>
+<script>
+AF_initDataCallback({key: 'ds:3', data:["/store/apps/details/Ollama_AI_Chat?id\u003dcom.charles.ollama.client.play\u0026hl\u003den"]});
+</script>
+</body>
+</html>
