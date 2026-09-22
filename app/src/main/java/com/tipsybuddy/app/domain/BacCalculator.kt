@@ -207,8 +207,12 @@ object BacCalculator {
             else -> HangoverRisk.LOW
         }
 
-        // Suggest taxi if BAC >= 0.05% or 3+ standard drinks
-        val shouldSuggestTaxi = currentBac >= 0.05 || totalStandardDrinks >= 3.0
+        // Suggest taxi based on LIVE metabolized BAC only, so the banner
+        // automatically clears once BAC drops back to safe levels (< 0.05%).
+        // NOTE: do NOT OR with cumulative totalStandardDrinks — that value never
+        // decays and would keep the "too tipsy to drive" warning stuck on the
+        // home screen even after the user sobers up.
+        val shouldSuggestTaxi = currentBac >= 0.05
 
         return BacResult(
             bac = currentBac,
