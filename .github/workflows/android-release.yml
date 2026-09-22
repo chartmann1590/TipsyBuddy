@@ -27,6 +27,7 @@ jobs:
       # current runner images (`sdkmanager tools` -> "Failed to find package
       # 'tools'", exit code 1), so it was removed. This step only ensures the
       # exact platform / build-tools required by compileSdk 35 are present.
+      # sdkmanager is NOT on the default PATH, so resolve it under $ANDROID_HOME.
       - name: Ensure Android SDK packages
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
