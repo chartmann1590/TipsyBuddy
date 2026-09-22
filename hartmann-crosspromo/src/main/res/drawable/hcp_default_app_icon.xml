@@ -7,39 +7,29 @@
     <rect
         android:width="56"
         android:height="56"
-        android:rx="12"
-        android:ry="12"
-        android:fill="#EDEDED"/>
+        android:fillColor="#EDEDED"/>
     <rect
         android:x="14"
         android:y="14"
         android:width="28"
         android:height="28"
-        android:rx="6"
-        android:ry="6"
-        android:fill="#FFFFFF"/>
+        android:fillColor="#FFFFFF"/>
     <rect
         android:x="20"
         android:y="20"
         android:width="14"
         android:height="14"
-        android:rx="3"
-        android:ry="3"
-        android:fill="#CCCCCC"/>
+        android:fillColor="#CCCCCC"/>
     <rect
         android:x="20"
         android:y="36"
         android:width="14"
         android:height="6"
-        android:rx="1.5"
-        android:ry="1.5"
-        android:fill="#CCCCCC"/>
+        android:fillColor="#CCCCCC"/>
     <rect
         android:x="36"
         android:y="36"
         android:width="14"
         android:height="6"
-        android:rx="1.5"
-        android:ry="1.5"
-        android:fill="#CCCCCC"/>
+        android:fillColor="#CCCCCC"/>
 </vector>
