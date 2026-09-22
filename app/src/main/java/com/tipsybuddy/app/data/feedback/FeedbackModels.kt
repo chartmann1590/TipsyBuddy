@@ -1,0 +1,78 @@
+package com.tipsybuddy.app.data.feedback
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+/** Local record of a submitted report, persisted in DataStore. */
+@Serializable
+data class BugReport(
+    val number: Int,
+    val title: String,
+    val status: String,
+    val createdAt: String,
+    val htmlUrl: String,
+)
+
+@Serializable
+data class CreateIssueRequest(
+    val title: String,
+    val body: String,
+)
+
+@Serializable
+data class FeedbackIssue(
+    val number: Int,
+    val title: String,
+    val state: String,
+    val htmlUrl: String,
+    val createdAt: String,
+    val body: String? = null,
+)
+
+@Serializable
+data class FeedbackUser(
+    val login: String,
+)
+
+@Serializable
+data class FeedbackComment(
+    val id: Long,
+    val body: String,
+    val createdAt: String,
+    val user: FeedbackUser,
+)
+
+@Serializable
+data class PostCommentRequest(
+    val body: String,
+)
+
+@Serializable
+data class UploadAssetRequest(
+    val fileName: String,
+    val contentBase64: String,
+)
+
+@Serializable
+data class UploadAssetResponse(
+    val downloadUrl: String? = null,
+    val htmlUrl: String? = null,
+)
+
+@Serializable
+data class CreatedIssueResponse(
+    val number: Int,
+    val title: String,
+    val state: String,
+    val htmlUrl: String,
+    val createdAt: String,
+)
+
+@Serializable
+data class ApiError(
+    val error: String,
+)
+
+/** True when the build has a usable Worker URL configured. */
+fun isFeedbackConfigured(workerUrl: String): Boolean =
+    workerUrl.isNotBlank() && (workerUrl.startsWith("http://") || workerUrl.startsWith("https://"))

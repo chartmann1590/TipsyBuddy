@@ -1,0 +1,14 @@
+{
+  // Cloudflare Worker config for the TipsyBuddy in-app feedback reporter.
+  // GITHUB_TOKEN must be set as a Worker SECRET (`wrangler secret put GITHUB_TOKEN`)
+  // and must NEVER appear in this file.
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/configuration-schema.json",
+  "name": "tipsybuddy-feedback-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-11-01",
+  "vars": {
+    "GITHUB_REPO_OWNER": "chartmann1590",
+    "GITHUB_REPO_NAME": "TipsyBuddy",
+    "FEEDBACK_ASSETS_DIR": "feedback-assets"
+  }
+}

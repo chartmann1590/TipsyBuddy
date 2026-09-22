@@ -166,6 +166,8 @@ fun ProfileSettingsScreen(
 
         AdMobBanner(modifier = Modifier.fillMaxWidth())
 
+        SupportFeedbackSection()
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
