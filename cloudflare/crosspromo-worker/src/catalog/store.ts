@@ -4,7 +4,7 @@
  *
  * Key layout (all values JSON):
  *   v1:catalog              AppEntry[] — the served last-known-good catalog
- *   v1:meta                 Record<string,string> — refresh timestamps etc.
+ *   v1:meta:<key>           string — refresh timestamps etc. (one key per field, atomic)
  *   v1:config               Record<string,unknown> — global remote config
  *   v1:appcfg:<package>     per-source-app overrides
  *   v1:refreshes            capped array (newest last) of refresh records
@@ -23,15 +23,14 @@
 import type { AppEntry, RefreshDiagnostics } from "../types";
 
 export const META_KEYS = {
-  lastRefreshAttempt: "lastRefreshAttempt",
-  lastSuccessfulRefresh: "lastSuccessfulRefresh",
-  lastKnownGoodRefresh: "lastKnownGoodRefresh",
-  lastKnownGoodCount: "lastKnownGoodCount",
-  lastSource: "lastSource",
+  lastRefreshAttempt: "v1:meta:lastRefreshAttempt",
+  lastSuccessfulRefresh: "v1:meta:lastSuccessfulRefresh",
+  lastKnownGoodRefresh: "v1:meta:lastKnownGoodRefresh",
+  lastKnownGoodCount: "v1:meta:lastKnownGoodCount",
+  lastSource: "v1:meta:lastSource",
 } as const;
 
 const K_CATALOG = "v1:catalog";
-const K_META = "v1:meta";
 const K_REFRESHES = "v1:refreshes";
 const K_IDX_TARGETS = "v1:idx:targets";
 const K_IDX_PLACES = "v1:idx:places";
@@ -92,27 +91,15 @@ export async function writeCatalog(kv: KVNamespace, apps: AppEntry[]): Promise<v
 
 export async function readMeta(kv: KVNamespace, key: string): Promise<string | null> {
   try {
-    const meta = await kv.get(K_META, "json");
-    if (meta && typeof meta === "object") {
-      const v = (meta as Record<string, unknown>)[key];
-      return typeof v === "string" ? v : null;
-    }
-    return null;
+    const v = await kv.get(key, "json");
+    return typeof v === "string" ? v : null;
   } catch {
     return null;
   }
 }
 
 export async function writeMeta(kv: KVNamespace, key: string, value: string): Promise<void> {
-  let meta: Record<string, unknown> = {};
-  try {
-    const existing = await kv.get(K_META, "json");
-    if (existing && typeof existing === "object") meta = existing as Record<string, unknown>;
-  } catch {
-    // start fresh
-  }
-  meta[key] = value;
-  await kv.put(K_META, JSON.stringify(meta));
+  await kv.put(key, JSON.stringify(value));
 }
 
 export interface RefreshRecord {
