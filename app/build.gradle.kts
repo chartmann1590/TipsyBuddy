@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
 }
 
@@ -77,6 +78,23 @@ android {
         buildConfigField("String", "ADMOB_BANNER_ID", "\"$testBannerId\"")
         buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"$testInterstitialId\"")
         manifestPlaceholders["admobAppId"] = testAppId
+
+        // Feedback Worker URL (non-secret). Resolution order:
+        //   1. Gradle property  -P feedback.worker.url (or ~/.gradle/gradle.properties)
+        //   2. Environment      FEEDBACK_WORKER_URL
+        //   3. local.properties feedback.worker.url (gitignored, local dev only)
+        //   4. Fallback: "" (unconfigured — app still compiles, submission disabled).
+        // Never put a GitHub PAT here; Android holds no GitHub credentials.
+        val feedbackWorkerUrl = run {
+            val fromGradle = project.findProperty("feedback.worker.url")?.toString()?.trim()
+            if (!fromGradle.isNullOrBlank()) return@run fromGradle
+            val fromEnv = System.getenv("FEEDBACK_WORKER_URL")?.trim()
+            if (!fromEnv.isNullOrBlank()) return@run fromEnv
+            val fromLocal = localAdMobProps.getProperty("feedback.worker.url")?.trim()
+            if (!fromLocal.isNullOrBlank()) return@run fromLocal
+            ""
+        }
+        buildConfigField("String", "FEEDBACK_WORKER_URL", "\"$feedbackWorkerUrl\"")
     }
 
     buildTypes {
@@ -177,6 +195,10 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
     implementation(libs.kotlinx.coroutines.android)
+
+    // In-app GitHub-backed feedback reporter (via Cloudflare Worker proxy)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.datastore.preferences)
 
     // OpenStreetMap Android (100% free open-source map)
     implementation("org.osmdroid:osmdroid-android:6.1.18")
