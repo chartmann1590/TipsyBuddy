@@ -69,8 +69,8 @@ function isAuthorized(request: Request, env: WorkerEnv): boolean {
   const token = env.ADMIN_TOKEN;
   if (!token) return false;
   const header = request.headers.get("Authorization") ?? "";
-  const query = new URL(request.url).searchParams.get("token") ?? "";
-  const candidate = header.startsWith("Bearer ") ? header.slice(7) : query;
+  if (!header.startsWith("Bearer ")) return false;
+  const candidate = header.slice(7);
   if (!candidate || candidate.length !== token.length) return false;
   let diff = 0;
   for (let i = 0; i < token.length; i++) {
