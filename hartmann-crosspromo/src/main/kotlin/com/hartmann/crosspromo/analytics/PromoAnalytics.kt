@@ -8,7 +8,9 @@ import java.util.TimeZone
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -127,7 +129,12 @@ class FirebaseAnalyticsAdapter(
 class BackendAnalyticsAdapter(
     private val post: suspend (List<PromoAnalyticsEvent>) -> Boolean,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    private val batchSize: Int = 50,
+    private val flushMs: Long = 2_000,
 ) : CrossPromoAnalytics {
+    private val buffer = ArrayDeque<PromoAnalyticsEvent>()
+    private val lock = Any()
+    private var flushJob: Job? = null
 
     override fun impression(
         sourcePackage: String,
@@ -184,9 +191,39 @@ class BackendAnalyticsAdapter(
     }
 
     private fun send(event: PromoAnalyticsEvent) {
+        val shouldFlush = synchronized(lock) {
+            buffer.addLast(event)
+            buffer.size >= batchSize
+        }
+        if (shouldFlush) {
+            flush()
+        } else {
+            scheduleFlush()
+        }
+    }
+
+    private fun scheduleFlush() {
+        synchronized(lock) {
+            if (flushJob != null) return
+            flushJob = scope.launch {
+                delay(flushMs)
+                flush()
+            }
+        }
+    }
+
+    private fun flush() {
+        val batch = synchronized(lock) {
+            if (buffer.isEmpty()) return@synchronized emptyList<PromoAnalyticsEvent>().also { flushJob = null }
+            val batch = buffer.takeLast(batchSize)
+            repeat(batch.size) { buffer.removeLast() }
+            flushJob = null
+            batch
+        }
+        if (batch.isEmpty()) return
         scope.launch {
             try {
-                post(listOf(event))
+                post(batch)
             } catch (_: Exception) {
                 // Swallowed by design.
             }
