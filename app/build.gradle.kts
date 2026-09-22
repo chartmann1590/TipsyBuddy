@@ -110,7 +110,7 @@ android {
             if (!fromLocal.isNullOrBlank()) return@run fromLocal
             ""
         }
-        buildConfigField("String", "CROSS_PROMO_URL", "\"$crossPromoUrl\"")
+        buildConfigField("String", "CROSS_PROMO_URL", "\"${crossPromoUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
     }
 
     buildTypes {
