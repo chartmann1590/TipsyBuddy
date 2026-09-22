@@ -791,6 +791,60 @@ body {
   margin: 0 auto 30px;
 }
 
+/* Support / Donate */
+.support-section {
+  margin-top: 40px;
+  padding: 28px 20px;
+  text-align: center;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 18px;
+}
+
+.support-section .section-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin-bottom: 8px;
+}
+
+.support-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 520px;
+  margin: 0 auto 16px auto;
+}
+
+.btn-bmc {
+  background: linear-gradient(135deg, #FFDD00, #FFAA00);
+  color: #000000;
+  display: inline-flex;
+  box-shadow: 0 4px 14px rgba(255, 221, 0, 0.3);
+}
+
+.btn-bmc:hover {
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+}
+
+.support-line {
+  margin: 8px auto 0 auto;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.support-line a,
+.app-footer .support-line a {
+  color: var(--accent-gold);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.support-line a:hover {
+  text-decoration: underline;
+}
+
 /* Responsive tweaks */
 @media (max-width: 480px) {
   .input-row {

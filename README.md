@@ -98,6 +98,16 @@ Read the full details here:
 
 ---
 
+## ☕ Support TipsyBuddy
+
+TipsyBuddy is free and built with 💛 for safer nights out. If it helped you get home safe, consider supporting development:
+
+**[☕ Buy me a coffee](https://www.buymeacoffee.com/charleshartmann)**
+
+Every coffee keeps the servers running and new features coming. Thank you!
+
+---
+
 ## Questions or feedback?
 
 We'd love to hear from you! Open an issue here on GitHub to report a problem, suggest a feature, or just say hi.
