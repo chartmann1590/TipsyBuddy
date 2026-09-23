@@ -11,8 +11,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -154,7 +154,7 @@ fun LogDrinksScreen(
             onValueChange = { searchQuery = it },
             placeholder = { Text("Search Bud Light, Heineken, Margarita, Vodka...".tr(), fontSize = 12.sp, color = TextMuted) },
             leadingIcon = {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = TextMuted)
+                Icon(imageVector = Icons.Filled.Search, contentDescription = null, tint = TextMuted)
             },
             trailingIcon = {
                 if (searchQuery.isNotBlank()) {
