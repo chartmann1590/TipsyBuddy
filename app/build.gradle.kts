@@ -59,8 +59,10 @@ android {
         applicationId = "com.tipsybuddy.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        val envVersionCode = System.getenv("ANDROID_VERSION_CODE")
+        val envVersionName = System.getenv("ANDROID_VERSION_NAME")
+        versionCode = envVersionCode?.toIntOrNull() ?: 1
+        versionName = envVersionName ?: "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -113,6 +115,29 @@ android {
         buildConfigField("String", "CROSS_PROMO_URL", "\"$crossPromoUrl\"")
     }
 
+    signingConfigs {
+        create("release") {
+            val sf = localAdMobProps.getProperty("tipsybuddy.storeFile")
+                ?: localAdMobProps.getProperty("nutrisnap.storeFile")
+                ?: System.getenv("KEYSTORE_FILE")
+            if (!sf.isNullOrBlank()) {
+                val f = rootProject.file(sf)
+                if (f.exists()) {
+                    storeFile = f
+                }
+            }
+            storePassword = localAdMobProps.getProperty("tipsybuddy.storePassword")
+                ?: localAdMobProps.getProperty("nutrisnap.storePassword")
+                ?: System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyAlias = localAdMobProps.getProperty("tipsybuddy.keyAlias")
+                ?: localAdMobProps.getProperty("nutrisnap.keyAlias")
+                ?: System.getenv("KEY_ALIAS") ?: ""
+            keyPassword = localAdMobProps.getProperty("tipsybuddy.keyPassword")
+                ?: localAdMobProps.getProperty("nutrisnap.keyPassword")
+                ?: System.getenv("KEY_PASSWORD") ?: ""
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -120,6 +145,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val releaseSigning = signingConfigs.getByName("release")
+            if (releaseSigning.storeFile != null && releaseSigning.storeFile!!.exists()) {
+                signingConfig = releaseSigning
+            }
             // Production AdMob IDs resolved from Secrets / local.properties.
             // Never hardcode real publisher IDs here — see header comment.
             // Without Secrets (or local.properties), release falls back to
