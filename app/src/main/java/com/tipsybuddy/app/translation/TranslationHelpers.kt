@@ -1,5 +1,6 @@
 package com.tipsybuddy.app.translation
 
+import android.content.Context
 import androidx.compose.runtime.compositionLocalOf
 
 val LocalAppTranslationManager = compositionLocalOf<AppTranslationManager> {
@@ -9,11 +10,26 @@ val LocalAppTranslationManager = compositionLocalOf<AppTranslationManager> {
 /**
  * Translates a given text using the singleton AppTranslationManager.
  * Standard Kotlin function so it can be called safely in any Compose or non-Compose context.
+ * Returns original text if translation manager is not initialized.
  */
 fun tr(text: String): String {
     if (text.isBlank()) return text
     return try {
         AppTranslationManager.getInstance().translate(text)
+    } catch (e: Exception) {
+        text
+    }
+}
+
+/**
+ * Translates a given text using the singleton AppTranslationManager with explicit Context.
+ * Use this when calling from non-Compose contexts or early startup where initialization order matters.
+ * Returns original text if translation manager is not initialized.
+ */
+fun tr(text: String, context: Context): String {
+    if (text.isBlank()) return text
+    return try {
+        AppTranslationManager.getInstance(context).translate(text)
     } catch (e: Exception) {
         text
     }
