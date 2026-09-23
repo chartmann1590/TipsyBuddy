@@ -84,6 +84,18 @@ class UserPreferences(context: Context) {
         get() = prefs.getString("live_status_message", "Partying at Venue 🍸") ?: "Partying at Venue 🍸"
         set(value) = prefs.edit().putString("live_status_message", value).apply()
 
+    var isOnboardingCompleted: Boolean
+        get() = prefs.getBoolean("is_onboarding_completed", false)
+        set(value) = prefs.edit().putBoolean("is_onboarding_completed", value).apply()
+
+    var appLanguageCode: String
+        get() = prefs.getString("app_language_code", "en") ?: "en"
+        set(value) = prefs.edit().putString("app_language_code", value).apply()
+
+    var appLanguageName: String
+        get() = prefs.getString("app_language_name", "English") ?: "English"
+        set(value) = prefs.edit().putString("app_language_name", value).apply()
+
     fun resetNewSessionId(): String {
         val newId = "tb-" + UUID.randomUUID().toString().substring(0, 6)
         liveSessionId = newId

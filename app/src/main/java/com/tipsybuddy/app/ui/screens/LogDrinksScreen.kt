@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.tipsybuddy.app.data.DrinkEntity
 import com.tipsybuddy.app.domain.BacCalculator
 import com.tipsybuddy.app.domain.DrinkPreset
+import com.tipsybuddy.app.translation.tr
 import com.tipsybuddy.app.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -97,13 +98,13 @@ fun LogDrinksScreen(
         ) {
             Column {
                 Text(
-                    text = "Drink Logger 🍻",
+                    text = "Drink Logger 🍻".tr(),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
                 Text(
-                    text = "Tap popular beers, mixed drinks, or build custom",
+                    text = "Tap popular beers, mixed drinks, or build custom".tr(),
                     fontSize = 12.sp,
                     color = TextSecondary
                 )
@@ -116,7 +117,7 @@ fun LogDrinksScreen(
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Color.Black)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Custom", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text(text = "Custom".tr(), color = Color.Black, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -151,7 +152,7 @@ fun LogDrinksScreen(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text("Search Bud Light, Heineken, Margarita, Vodka...", fontSize = 12.sp, color = TextMuted) },
+            placeholder = { Text("Search Bud Light, Heineken, Margarita, Vodka...".tr(), fontSize = 12.sp, color = TextMuted) },
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = TextMuted)
             },
@@ -189,7 +190,7 @@ fun LogDrinksScreen(
                     modifier = Modifier.clickable { selectedCategory = category }
                 ) {
                     Text(
-                        text = category,
+                        text = category.tr(),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                         fontSize = 12.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
@@ -206,7 +207,7 @@ fun LogDrinksScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "BUILT-IN DRINKS (${filteredPresets.size})",
+                text = "BUILT-IN DRINKS (%d)".tr(filteredPresets.size),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextMuted,
@@ -214,7 +215,7 @@ fun LogDrinksScreen(
             )
             if (searchQuery.isNotBlank()) {
                 Text(
-                    text = "Clear search",
+                    text = "Clear search".tr(),
                     fontSize = 11.sp,
                     color = NeonCyan,
                     modifier = Modifier.clickable { searchQuery = "" }
@@ -274,7 +275,7 @@ fun LogDrinksScreen(
                             color = NeonCyan
                         )
                         Text(
-                            text = if (preset.defaultPrice > 0) "$${String.format(Locale.US, "%.2f", preset.defaultPrice)}" else "Free / $0",
+                            text = if (preset.defaultPrice > 0) "$${String.format(Locale.US, "%.2f", preset.defaultPrice)}" else "Free / $0".tr(),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = NeonGreen
@@ -286,7 +287,7 @@ fun LogDrinksScreen(
 
         // Tonight's Logged Drinks Timeline
         Text(
-            text = "TONIGHT'S TIMELINE (${drinks.size} items)",
+            text = "TONIGHT'S TIMELINE (%d items)".tr(drinks.size),
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = TextMuted,
@@ -304,13 +305,13 @@ fun LogDrinksScreen(
                     Text(text = "🍹", fontSize = 42.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "No drinks logged yet tonight",
+                        text = "No drinks logged yet tonight".tr(),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
                     Text(
-                        text = "Tap a preset above to log your first drink!",
+                        text = "Tap a preset above to log your first drink!".tr(),
                         fontSize = 12.sp,
                         color = TextSecondary
                     )
@@ -426,7 +427,7 @@ fun CustomDrinkDialog(
         containerColor = SurfaceDark,
         title = {
             Text(
-                text = "Build Custom Drink",
+                text = "Build Custom Drink".tr(),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary
@@ -440,8 +441,8 @@ fun CustomDrinkDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Drink Name") },
-                    placeholder = { Text("e.g. Gin Tonic, Pitcher") },
+                    label = { Text("Drink Name".tr()) },
+                    placeholder = { Text("e.g. Gin Tonic, Pitcher".tr()) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = TextPrimary,
@@ -453,7 +454,7 @@ fun CustomDrinkDialog(
                 )
 
                 // Category chips
-                Text(text = "Category", fontSize = 12.sp, color = TextMuted)
+                Text(text = "Category".tr(), fontSize = 12.sp, color = TextMuted)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     items(categoryOptions) { cat ->
                         Surface(
@@ -463,7 +464,7 @@ fun CustomDrinkDialog(
                             modifier = Modifier.clickable { category = cat }
                         ) {
                             Text(
-                                text = cat,
+                                text = cat.tr(),
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
@@ -479,7 +480,7 @@ fun CustomDrinkDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Volume", fontSize = 12.sp, color = TextMuted)
+                        Text(text = "Volume".tr(), fontSize = 12.sp, color = TextMuted)
                         Text(text = "${volumeOz.roundToInt()} oz", fontSize = 12.sp, color = NeonCyan, fontWeight = FontWeight.Bold)
                     }
                     Slider(
@@ -496,7 +497,7 @@ fun CustomDrinkDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Alcohol By Volume (ABV)", fontSize = 12.sp, color = TextMuted)
+                        Text(text = "Alcohol By Volume (ABV)".tr(), fontSize = 12.sp, color = TextMuted)
                         Text(text = "${abv.roundToInt()}%", fontSize = 12.sp, color = NeonGold, fontWeight = FontWeight.Bold)
                     }
                     Slider(
@@ -510,7 +511,7 @@ fun CustomDrinkDialog(
                 OutlinedTextField(
                     value = priceStr,
                     onValueChange = { priceStr = it },
-                    label = { Text("Price ($)") },
+                    label = { Text("Price ($)".tr()) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = TextPrimary,
@@ -531,12 +532,12 @@ fun CustomDrinkDialog(
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = NeonGold)
             ) {
-                Text(text = "Add Drink", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text(text = "Add Drink".tr(), color = Color.Black, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = "Cancel", color = TextSecondary)
+                Text(text = "Cancel".tr(), color = TextSecondary)
             }
         }
     )

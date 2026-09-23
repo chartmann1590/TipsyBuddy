@@ -229,4 +229,7 @@ dependencies {
 
     // Google Mobile Ads (AdMob) — version from gradle/libs.versions.toml
     implementation(libs.play.services.ads)
+
+    // Google ML Kit On-Device Translation (free, offline after model download)
+    implementation(libs.mlkit.translate)
 }

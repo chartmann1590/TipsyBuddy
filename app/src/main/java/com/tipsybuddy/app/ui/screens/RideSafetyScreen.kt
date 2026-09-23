@@ -25,6 +25,7 @@ import com.tipsybuddy.app.data.CheckInEntity
 import com.tipsybuddy.app.data.UserPreferences
 import com.tipsybuddy.app.domain.RideFareEstimate
 import com.tipsybuddy.app.domain.RideManager
+import com.tipsybuddy.app.translation.tr
 import com.tipsybuddy.app.ui.theme.*
 import java.util.Locale
 
@@ -61,13 +62,13 @@ fun RideSafetyScreen(
         // Header
         Column {
             Text(
-                text = "Safe Ride Home",
+                text = "Safe Ride Home".tr(),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary
             )
             Text(
-                text = "Auto-dispatch rides with pre-filled destination & fare estimates",
+                text = "Auto-dispatch rides with pre-filled destination & fare estimates".tr(),
                 fontSize = 12.sp,
                 color = TextSecondary
             )
@@ -99,14 +100,14 @@ fun RideSafetyScreen(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "HOME DESTINATION",
+                        text = "HOME DESTINATION".tr(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextMuted,
                         letterSpacing = 1.sp
                     )
                     Text(
-                        text = if (homeAddress.isNotBlank()) homeAddress else "No home address set (Tap edit)",
+                        text = if (homeAddress.isNotBlank()) homeAddress else "No home address set (Tap edit)".tr(),
                         fontSize = 14.sp,
                         fontWeight = if (homeAddress.isNotBlank()) FontWeight.Bold else FontWeight.Normal,
                         color = if (homeAddress.isNotBlank()) TextPrimary else TextMuted,
