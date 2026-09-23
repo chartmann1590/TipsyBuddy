@@ -14,6 +14,8 @@ import com.google.mlkit.nl.translate.TranslatorOptions
 import com.tipsybuddy.app.data.UserPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
@@ -35,7 +37,8 @@ sealed interface ModelDownloadStatus {
 class AppTranslationManager private constructor(private val context: Context) {
 
     private val userPrefs = UserPreferences(context)
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val job = SupervisorJob()
+    private val scope = CoroutineScope(Dispatchers.IO + job)
 
     // Reactive Compose states
     private val _currentLanguageState = mutableStateOf(userPrefs.appLanguageCode)
@@ -290,6 +293,15 @@ class AppTranslationManager private constructor(private val context: Context) {
                 }
             }
         }
+    }
+
+    /**
+     * Shuts down the translation manager and cancels all background coroutines.
+     */
+    fun close() {
+        job.cancel()
+        activeTranslator?.close()
+        activeTranslator = null
     }
 
     companion object {
