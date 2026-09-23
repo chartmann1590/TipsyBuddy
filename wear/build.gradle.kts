@@ -15,15 +15,12 @@ run {
 
 android {
     namespace = "com.tipsybuddy.wear"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.tipsybuddy.app"
         minSdk = 30
-        // targetSdk 34 (not 35): androidx.wear.compose.foundation 1.3.1's
-        // ScalingLazyColumn reads the reduce_motion Settings.Global key,
-        // which throws SecurityException for targetSdk 35+ on some system images.
-        targetSdk = 34
+        targetSdk = 35
         val envVersionCode = System.getenv("ANDROID_WEAR_VERSION_CODE")
             ?: System.getenv("ANDROID_VERSION_CODE")?.let { (it.toLong() + 1).toString() }
         val envVersionName = System.getenv("ANDROID_VERSION_NAME")

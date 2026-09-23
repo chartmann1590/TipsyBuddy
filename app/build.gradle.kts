@@ -53,12 +53,12 @@ fun resolveAdMobId(
 
 android {
     namespace = "com.tipsybuddy.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.tipsybuddy.app"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         val envVersionCode = System.getenv("ANDROID_VERSION_CODE")
         val envVersionName = System.getenv("ANDROID_VERSION_NAME")
         versionCode = envVersionCode?.toIntOrNull() ?: 1

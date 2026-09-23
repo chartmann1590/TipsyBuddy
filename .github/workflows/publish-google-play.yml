@@ -50,7 +50,7 @@ jobs:
             if [ -x "$d/sdkmanager" ]; then SDKMANAGER="$d/sdkmanager"; break; fi
           done
           if [ -z "$SDKMANAGER" ]; then echo "sdkmanager not found under $ANDROID_HOME/cmdline-tools"; exit 1; fi
-          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
           yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses > /dev/null || true
 
       - name: Compute version code and version name
