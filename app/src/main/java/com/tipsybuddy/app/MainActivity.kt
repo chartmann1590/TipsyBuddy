@@ -26,6 +26,9 @@ import com.tipsybuddy.app.ads.InterstitialAdManager
 import com.tipsybuddy.app.ads.findActivity
 import com.tipsybuddy.app.data.*
 import com.tipsybuddy.app.domain.BacCalculator
+import com.tipsybuddy.app.translation.AppTranslationManager
+import com.tipsybuddy.app.translation.LocalAppTranslationManager
+import com.tipsybuddy.app.translation.tr
 import com.tipsybuddy.app.ui.screens.*
 import com.tipsybuddy.app.ui.theme.*
 import com.tipsybuddy.app.wear.PhoneWearSyncManager
@@ -73,10 +76,29 @@ class MainActivity : ComponentActivity() {
 
         val db = AppDatabase.getInstance(this)
         val userPrefs = UserPreferences(this)
+        val translationManager = AppTranslationManager.getInstance(this)
 
         setContent {
             TipsyBuddyTheme {
-                MainAppContent(db = db, userPrefs = userPrefs)
+                val transVersion = translationManager.versionState.value
+                val currentLang = translationManager.currentLanguageState.value
+
+                CompositionLocalProvider(LocalAppTranslationManager provides translationManager) {
+                    var showOnboarding by remember { mutableStateOf(!userPrefs.isOnboardingCompleted) }
+
+                    if (showOnboarding) {
+                        OnboardingScreen(
+                            userPrefs = userPrefs,
+                            onFinish = { showOnboarding = false }
+                        )
+                    } else {
+                        MainAppContent(
+                            db = db,
+                            userPrefs = userPrefs,
+                            onOpenOnboarding = { showOnboarding = true }
+                        )
+                    }
+                }
             }
         }
     }
@@ -85,8 +107,13 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainAppContent(
     db: AppDatabase,
-    userPrefs: UserPreferences
+    userPrefs: UserPreferences,
+    onOpenOnboarding: () -> Unit = {}
 ) {
+    val translationManager = LocalAppTranslationManager.current
+    val transVersion = translationManager.versionState.value
+    val currentLang = translationManager.currentLanguageState.value
+
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     var currentScreen by remember { mutableStateOf(AppScreen.TONIGHT) }
@@ -139,11 +166,11 @@ fun MainAppContent(
                         icon = {
                             Icon(
                                 imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
-                                contentDescription = screen.title
+                                contentDescription = screen.title.tr()
                             )
                         },
                         label = {
-                            Text(text = screen.title, fontSize = 10.sp, maxLines = 1)
+                            Text(text = screen.title.tr(), fontSize = 10.sp, maxLines = 1)
                         },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = NeonGold,
@@ -284,7 +311,8 @@ fun MainAppContent(
                                 db.checkInDao().clearAll()
                                 com.tipsybuddy.app.widget.TipsyWidgetProvider.updateAllWidgets(context)
                             }
-                        }
+                        },
+                        onOpenTour = onOpenOnboarding
                     )
                 }
             }

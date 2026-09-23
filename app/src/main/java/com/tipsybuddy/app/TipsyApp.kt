@@ -18,6 +18,9 @@ class TipsyApp : Application() {
         osmConfig.osmdroidBasePath = File(cacheDir, "osmdroid")
         osmConfig.osmdroidTileCache = File(cacheDir, "osmdroid/tiles")
 
+        // Initialize Google ML Kit Translation Engine
+        com.tipsybuddy.app.translation.AppTranslationManager.initialize(this)
+
         // Google Mobile Ads (AdMob) — uses test unit IDs in debug by default
         try {
             MobileAds.initialize(this) { status ->

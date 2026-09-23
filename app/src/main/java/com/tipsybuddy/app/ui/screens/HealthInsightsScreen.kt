@@ -20,6 +20,7 @@ import com.tipsybuddy.app.ads.AdMobBanner
 import com.tipsybuddy.app.data.DrinkEntity
 import com.tipsybuddy.app.data.UserPreferences
 import com.tipsybuddy.app.domain.BacCalculator
+import com.tipsybuddy.app.translation.tr
 import com.tipsybuddy.app.ui.theme.*
 import com.tipsybuddy.app.wear.PhoneWatchVitals
 import java.text.SimpleDateFormat
@@ -66,13 +67,13 @@ fun HealthInsightsScreen(
         // Top Header
         Column {
             Text(
-                text = "Health Insights & Recovery",
+                text = "Health Insights & Recovery".tr(),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = TextPrimary
             )
             Text(
-                text = "Track the physiological impact of alcohol on your sleep, metabolism, and heart rate.",
+                text = "Track the physiological impact of alcohol on your sleep, metabolism, and heart rate.".tr(),
                 fontSize = 12.sp,
                 color = TextSecondary
             )
@@ -103,7 +104,7 @@ fun HealthInsightsScreen(
                     ) {
                         Text(text = "⌚", fontSize = 16.sp)
                         Text(
-                            text = "WEAR OS LIVE VITALS",
+                            text = "WEAR OS LIVE VITALS".tr(),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextMuted,
@@ -117,7 +118,7 @@ fun HealthInsightsScreen(
                         border = BorderStroke(1.dp, if (watchVitals.isWatchConnected) NeonGreen else NeonGold)
                     ) {
                         Text(
-                            text = if (watchVitals.isWatchConnected) "WATCH PAIRED" else "READY TO SYNC",
+                            text = if (watchVitals.isWatchConnected) "WATCH PAIRED".tr() else "READY TO SYNC".tr(),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,

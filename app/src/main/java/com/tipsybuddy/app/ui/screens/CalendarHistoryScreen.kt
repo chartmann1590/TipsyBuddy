@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tipsybuddy.app.data.DrinkEntity
 import com.tipsybuddy.app.domain.BacCalculator
+import com.tipsybuddy.app.translation.tr
 import com.tipsybuddy.app.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -109,7 +110,7 @@ fun CalendarHistoryScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Drinking Calendar",
+                text = "Drinking Calendar".tr(),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary
@@ -121,7 +122,7 @@ fun CalendarHistoryScreen(
                     prev.add(Calendar.MONTH, -1)
                     calendarMonth = prev
                 }) {
-                    Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Previous Month", tint = NeonGold)
+                    Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Previous Month".tr(), tint = NeonGold)
                 }
 
                 Text(
@@ -136,7 +137,7 @@ fun CalendarHistoryScreen(
                     next.add(Calendar.MONTH, 1)
                     calendarMonth = next
                 }) {
-                    Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next Month", tint = NeonGold)
+                    Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next Month".tr(), tint = NeonGold)
                 }
             }
         }
@@ -153,8 +154,8 @@ fun CalendarHistoryScreen(
                 border = BorderStroke(1.dp, CardBorder)
             ) {
                 Column(modifier = Modifier.padding(10.dp)) {
-                    Text(text = "DRINKING DAYS", fontSize = 10.sp, color = TextMuted, fontWeight = FontWeight.Bold)
-                    Text(text = "$monthlyDrinkingDays days", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NeonGold)
+                    Text(text = "DRINKING DAYS".tr(), fontSize = 10.sp, color = TextMuted, fontWeight = FontWeight.Bold)
+                    Text(text = "%d days".tr(monthlyDrinkingDays), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NeonGold)
                 }
             }
 
@@ -167,8 +168,8 @@ fun CalendarHistoryScreen(
                 val totalDays = calendarMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
                 val soberDays = (totalDays - monthlyDrinkingDays).coerceAtLeast(0)
                 Column(modifier = Modifier.padding(10.dp)) {
-                    Text(text = "SOBER DAYS", fontSize = 10.sp, color = TextMuted, fontWeight = FontWeight.Bold)
-                    Text(text = "$soberDays days", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NeonGreen)
+                    Text(text = "SOBER DAYS".tr(), fontSize = 10.sp, color = TextMuted, fontWeight = FontWeight.Bold)
+                    Text(text = "%d days".tr(soberDays), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NeonGreen)
                 }
             }
 
@@ -179,7 +180,7 @@ fun CalendarHistoryScreen(
                 border = BorderStroke(1.dp, CardBorder)
             ) {
                 Column(modifier = Modifier.padding(10.dp)) {
-                    Text(text = "MONTHLY TAB", fontSize = 10.sp, color = TextMuted, fontWeight = FontWeight.Bold)
+                    Text(text = "MONTHLY TAB".tr(), fontSize = 10.sp, color = TextMuted, fontWeight = FontWeight.Bold)
                     Text(text = "$${monthlyTotalSpent.toInt()}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = NeonCyan)
                 }
             }
@@ -276,7 +277,7 @@ fun CalendarHistoryScreen(
 
         // Selected Date Breakdown Section
         Text(
-            text = "BREAKDOWN FOR $selectedDateStr",
+            text = "BREAKDOWN FOR %s".tr(selectedDateStr),
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = TextMuted,
@@ -295,7 +296,7 @@ fun CalendarHistoryScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "🌱 Sober day! No drinks logged on this date.",
+                        text = "🌱 Sober day! No drinks logged on this date.".tr(),
                         fontSize = 13.sp,
                         color = NeonGreen,
                         fontWeight = FontWeight.Medium
@@ -317,7 +318,7 @@ fun CalendarHistoryScreen(
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Total Drinks", fontSize = 11.sp, color = TextMuted)
+                        Text(text = "Total Drinks".tr(), fontSize = 11.sp, color = TextMuted)
                         Text(
                             text = "${selectedDateDrinks.count { it.isAlcoholic }}",
                             fontSize = 16.sp,
@@ -326,7 +327,7 @@ fun CalendarHistoryScreen(
                         )
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Est. Peak BAC", fontSize = 11.sp, color = TextMuted)
+                        Text(text = "Est. Peak BAC".tr(), fontSize = 11.sp, color = TextMuted)
                         Text(
                             text = String.format(Locale.US, "%.3f%%", selectedDayBac.bac),
                             fontSize = 16.sp,
@@ -335,7 +336,7 @@ fun CalendarHistoryScreen(
                         )
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Tab Cost", fontSize = 11.sp, color = TextMuted)
+                        Text(text = "Tab Cost".tr(), fontSize = 11.sp, color = TextMuted)
                         Text(
                             text = "$${String.format(Locale.US, "%.2f", selectedDayBac.totalCost)}",
                             fontSize = 16.sp,

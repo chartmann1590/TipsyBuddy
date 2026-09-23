@@ -32,6 +32,7 @@ import com.tipsybuddy.app.data.UserPreferences
 import com.tipsybuddy.app.domain.BacCalculator
 import com.tipsybuddy.app.domain.BacZone
 import com.tipsybuddy.app.domain.RideManager
+import com.tipsybuddy.app.translation.tr
 import com.tipsybuddy.app.ui.theme.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -109,7 +110,7 @@ fun TonightDashboardScreen(
         ) {
             Column {
                 Text(
-                    text = if (userPrefs.userName.isNotBlank()) "Hey ${userPrefs.userName}! 🍻" else "Tonight's Night Out 🍻",
+                    text = if (userPrefs.userName.isNotBlank()) "Hey %s! 🍻".tr(userPrefs.userName) else "Tonight's Night Out 🍻".tr(),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
@@ -140,7 +141,7 @@ fun TonightDashboardScreen(
                                 .background(NeonGreen)
                         )
                         Text(
-                            text = "LIVE SHARING",
+                            text = "LIVE SHARING".tr(),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = NeonGreen
@@ -165,7 +166,7 @@ fun TonightDashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "ESTIMATED BLOOD ALCOHOL",
+                    text = "ESTIMATED BLOOD ALCOHOL".tr(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = TextMuted,
@@ -225,7 +226,7 @@ fun TonightDashboardScreen(
                     border = BorderStroke(1.dp, Color(bacResult.zone.colorHex).copy(alpha = 0.4f))
                 ) {
                     Text(
-                        text = bacResult.zone.title.uppercase(),
+                        text = bacResult.zone.title.tr().uppercase(),
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
@@ -234,7 +235,7 @@ fun TonightDashboardScreen(
                 }
 
                 Text(
-                    text = bacResult.zone.subtitle,
+                    text = bacResult.zone.subtitle.tr(),
                     fontSize = 13.sp,
                     color = TextSecondary,
                     textAlign = TextAlign.Center
@@ -246,7 +247,7 @@ fun TonightDashboardScreen(
                     }
                     val soberTimeStr = SimpleDateFormat("h:mm a", Locale.getDefault()).format(soberCalendar.time)
                     Text(
-                        text = "⏱️ Estimated sober at ~$soberTimeStr (~${String.format(Locale.US, "%.1f", bacResult.hoursToSober)} hrs)",
+                        text = "⏱️ Estimated sober at ~%s (~%.1f hrs)".tr(soberTimeStr, bacResult.hoursToSober),
                         fontSize = 12.sp,
                         color = NeonGold,
                         fontWeight = FontWeight.Medium
@@ -281,16 +282,16 @@ fun TonightDashboardScreen(
                         Text(text = "🚕", fontSize = 28.sp)
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = if (bacResult.bac >= 0.08) "Legally Intoxicated! Do Not Drive." else "You're Tipsy! Time to Call a Ride.",
+                                text = if (bacResult.bac >= 0.08) "Legally Intoxicated! Do Not Drive.".tr() else "You're Tipsy! Time to Call a Ride.".tr(),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = TextPrimary
                             )
                             Text(
                                 text = if (userPrefs.homeAddress.isNotBlank())
-                                    "Leave the car keys behind. One tap summons a ride straight to your home (${userPrefs.homeAddress})."
+                                    "Leave the car keys behind. One tap summons a ride straight to your home (%s).".tr(userPrefs.homeAddress)
                                 else
-                                    "Leave the car keys behind. One tap summons a ride safely home.",
+                                    "Leave the car keys behind. One tap summons a ride safely home.".tr(),
                                 fontSize = 12.sp,
                                 color = TextSecondary
                             )
@@ -314,7 +315,7 @@ fun TonightDashboardScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text(text = "🚗 Open Uber", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(text = "🚗 Open Uber".tr(), color = Color.White, fontWeight = FontWeight.Bold)
                         }
 
                         Button(
@@ -330,7 +331,7 @@ fun TonightDashboardScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF00BF)),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text(text = "⚡ Open Lyft", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(text = "⚡ Open Lyft".tr(), color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -340,7 +341,7 @@ fun TonightDashboardScreen(
                         shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, NeonGold)
                     ) {
-                        Text(text = "View Safe Rides & Fare Estimates →", color = NeonGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(text = "View Safe Rides & Fare Estimates →".tr(), color = NeonGold, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
@@ -358,7 +359,7 @@ fun TonightDashboardScreen(
                 border = BorderStroke(1.dp, CardBorder)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
-                    Text(text = "DRINKS", fontSize = 11.sp, color = TextMuted, fontWeight = FontWeight.Bold)
+                    Text(text = "DRINKS".tr(), fontSize = 11.sp, color = TextMuted, fontWeight = FontWeight.Bold)
                     Text(
                         text = "${drinks.count { it.isAlcoholic }}",
                         fontSize = 22.sp,
@@ -366,7 +367,7 @@ fun TonightDashboardScreen(
                         color = NeonGold
                     )
                     Text(
-                        text = "${String.format(Locale.US, "%.1f", bacResult.standardDrinks)} standard",
+                        text = "%s standard".tr(String.format(Locale.US, "%.1f", bacResult.standardDrinks)),
                         fontSize = 11.sp,
                         color = TextSecondary
                     )
@@ -380,14 +381,14 @@ fun TonightDashboardScreen(
                 border = BorderStroke(1.dp, CardBorder)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
-                    Text(text = "TOTAL SPENT", fontSize = 11.sp, color = TextMuted, fontWeight = FontWeight.Bold)
+                    Text(text = "TOTAL SPENT".tr(), fontSize = 11.sp, color = TextMuted, fontWeight = FontWeight.Bold)
                     Text(
                         text = "$${String.format(Locale.US, "%.0f", bacResult.totalCost)}",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = NeonGreen
                     )
-                    Text(text = "On tonight's tab", fontSize = 11.sp, color = TextSecondary)
+                    Text(text = "On tonight's tab".tr(), fontSize = 11.sp, color = TextSecondary)
                 }
             }
 
@@ -398,14 +399,14 @@ fun TonightDashboardScreen(
                 border = BorderStroke(1.dp, CardBorder)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
-                    Text(text = "HYDRATION", fontSize = 11.sp, color = TextMuted, fontWeight = FontWeight.Bold)
+                    Text(text = "HYDRATION".tr(), fontSize = 11.sp, color = TextMuted, fontWeight = FontWeight.Bold)
                     Text(
                         text = "${bacResult.hydrationScorePercent}%",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = NeonCyan
                     )
-                    Text(text = "${bacResult.waterCount} waters logged", fontSize = 11.sp, color = TextSecondary)
+                    Text(text = "%d waters logged".tr(bacResult.waterCount), fontSize = 11.sp, color = TextSecondary)
                 }
             }
         }
@@ -427,14 +428,14 @@ fun TonightDashboardScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "QUICK ADD DRINK",
+                        text = "QUICK ADD DRINK".tr(),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextMuted,
                         letterSpacing = 1.sp
                     )
                     Text(
-                        text = "See all drinks →",
+                        text = "See all drinks →".tr(),
                         fontSize = 12.sp,
                         color = NeonCyan,
                         fontWeight = FontWeight.SemiBold,
@@ -446,23 +447,23 @@ fun TonightDashboardScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    QuickDrinkButton(emoji = "🍺", name = "Beer", onClick = {
+                    QuickDrinkButton(emoji = "🍺", name = "Beer".tr(), onClick = {
                         onAddDrink("Draft Beer", "Beer", 12.0, 5.0, 7.0)
                         Toast.makeText(context, "🍺 Added Beer (12oz, 5%)", Toast.LENGTH_SHORT).show()
                     })
-                    QuickDrinkButton(emoji = "🍷", name = "Wine", onClick = {
+                    QuickDrinkButton(emoji = "🍷", name = "Wine".tr(), onClick = {
                         onAddDrink("Wine Glass", "Wine", 5.0, 12.5, 11.0)
                         Toast.makeText(context, "🍷 Added Wine (5oz, 12.5%)", Toast.LENGTH_SHORT).show()
                     })
-                    QuickDrinkButton(emoji = "🍸", name = "Cocktail", onClick = {
+                    QuickDrinkButton(emoji = "🍸", name = "Cocktail".tr(), onClick = {
                         onAddDrink("Cocktail", "Cocktail", 6.0, 15.0, 14.0)
                         Toast.makeText(context, "🍸 Added Cocktail (15%)", Toast.LENGTH_SHORT).show()
                     })
-                    QuickDrinkButton(emoji = "🍋", name = "Shot", onClick = {
+                    QuickDrinkButton(emoji = "🍋", name = "Shot".tr(), onClick = {
                         onAddDrink("Spirits Shot", "Shot", 1.5, 40.0, 8.0)
                         Toast.makeText(context, "🍋 Added 1.5oz Shot (40%)", Toast.LENGTH_SHORT).show()
                     })
-                    QuickDrinkButton(emoji = "💧", name = "Water", onClick = {
+                    QuickDrinkButton(emoji = "💧", name = "Water".tr(), onClick = {
                         onAddDrink("Pint of Water", "Water", 16.0, 0.0, 0.0)
                         Toast.makeText(context, "💧 Water Logged! Hydration up!", Toast.LENGTH_SHORT).show()
                     })
@@ -498,14 +499,14 @@ fun TonightDashboardScreen(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = latestCheckIn?.venueName ?: "Not Checked In",
+                        text = latestCheckIn?.venueName ?: "Not Checked In".tr(),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
                     Text(
-                        text = latestCheckIn?.address?.ifBlank { "Tap to check in to current bar" }
-                            ?: "Tap to check in & share live location",
+                        text = latestCheckIn?.address?.ifBlank { "Tap to check in to current bar".tr() }
+                            ?: "Tap to check in & share live location".tr(),
                         fontSize = 12.sp,
                         color = TextSecondary
                     )
