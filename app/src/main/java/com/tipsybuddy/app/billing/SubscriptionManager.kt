@@ -17,8 +17,8 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.tipsybuddy.app.data.UserPreferences
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,7 +50,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     private val userPrefs = UserPreferences(appContext)
-    private val scope = CoroutineScope(Dispatchers.Main)
+    private val scope = MainScope()
 
     private val _isAdFree = MutableStateFlow(userPrefs.isAdFreeSubscribed)
     val isAdFree: StateFlow<Boolean> = _isAdFree.asStateFlow()
