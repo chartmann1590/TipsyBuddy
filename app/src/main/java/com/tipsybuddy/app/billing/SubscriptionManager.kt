@@ -277,7 +277,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
                 } else {
                     val currentRetry = retryCount.incrementAndGet()
                     if (currentRetry <= MAX_ACK_RETRIES) {
-                        val delayMs = ACK_RETRY_BASE_DELAY_MS * (2L shl (currentRetry - 1))
+                        val delayMs = ACK_RETRY_BASE_DELAY_MS * (1L shl (currentRetry - 1))
                         Log.w(TAG, "Failed to acknowledge subscription (attempt $currentRetry/$MAX_ACK_RETRIES): ${result.debugMessage}. Retrying in ${delayMs}ms")
                         scope.launch(Dispatchers.IO) {
                             delay(delayMs)
