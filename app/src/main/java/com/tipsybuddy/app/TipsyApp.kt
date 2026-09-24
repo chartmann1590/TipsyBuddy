@@ -18,6 +18,9 @@ class TipsyApp : Application() {
         osmConfig.osmdroidBasePath = File(cacheDir, "osmdroid")
         osmConfig.osmdroidTileCache = File(cacheDir, "osmdroid/tiles")
 
+        // Initialize Google Play Billing / Subscription Manager
+        com.tipsybuddy.app.billing.SubscriptionManager.getInstance(this)
+
         // Initialize Google ML Kit Translation Engine
         com.tipsybuddy.app.translation.AppTranslationManager.initialize(this)
 

@@ -29,6 +29,8 @@ object InterstitialAdManager {
     private var lastShownAtMs = 0L
 
     fun preload(context: Context) {
+        val subscriptionManager = com.tipsybuddy.app.billing.SubscriptionManager.getInstance(context)
+        if (subscriptionManager.isAdFree.value) return
         if (interstitial != null || isLoading) return
         isLoading = true
         val request = AdRequest.Builder().build()
@@ -57,6 +59,10 @@ object InterstitialAdManager {
      * counter and shows only when frequency caps allow and an ad is ready.
      */
     fun onNaturalMoment(activity: Activity?) {
+        if (activity != null) {
+            val subscriptionManager = com.tipsybuddy.app.billing.SubscriptionManager.getInstance(activity)
+            if (subscriptionManager.isAdFree.value) return
+        }
         actionsSinceLastShow++
         if (activity == null || activity.isFinishing) {
             preload(activity?.applicationContext ?: return)
@@ -66,6 +72,8 @@ object InterstitialAdManager {
     }
 
     private fun maybeShow(activity: Activity) {
+        val subscriptionManager = com.tipsybuddy.app.billing.SubscriptionManager.getInstance(activity)
+        if (subscriptionManager.isAdFree.value) return
         val ready = interstitial
         val now = System.currentTimeMillis()
         val cappedByActions = actionsSinceLastShow < MIN_ACTIONS_BETWEEN_SHOWS

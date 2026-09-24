@@ -96,6 +96,10 @@ class UserPreferences(context: Context) {
         get() = prefs.getString("app_language_name", "English") ?: "English"
         set(value) = prefs.edit().putString("app_language_name", value).apply()
 
+    var isAdFreeSubscribed: Boolean
+        get() = prefs.getBoolean("is_ad_free_subscribed", false)
+        set(value) = prefs.edit().putBoolean("is_ad_free_subscribed", value).apply()
+
     fun resetNewSessionId(): String {
         val newId = "tb-" + UUID.randomUUID().toString().substring(0, 6)
         liveSessionId = newId

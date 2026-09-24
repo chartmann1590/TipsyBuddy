@@ -96,13 +96,13 @@ def main():
         "track": "internal",
         "releases": [
             {
-                "name": f"TipsyBuddy 1.0.0 ({phone_vc})",
+                "name": f"TipsyBuddy 1.0.1 ({phone_vc})",
                 "versionCodes": [str(phone_vc)],
                 "status": "completed",
                 "releaseNotes": [
                     {
                         "language": "en-US",
-                        "text": "TipsyBuddy initial internal testing release (Phone)."
+                        "text": "TipsyBuddy v1.0.1: Added Ad-Free Google Play subscription to remove all banner and interstitial ads, updated safety features, and stability improvements."
                     }
                 ]
             }
@@ -123,13 +123,13 @@ def main():
             "track": "wear:internal",
             "releases": [
                 {
-                    "name": f"TipsyBuddy Wear OS 1.0.0 ({wear_vc})",
+                    "name": f"TipsyBuddy Wear OS 1.0.1 ({wear_vc})",
                     "versionCodes": [str(wear_vc)],
                     "status": "completed",
                     "releaseNotes": [
                         {
                             "language": "en-US",
-                            "text": "TipsyBuddy initial Wear OS internal testing release."
+                            "text": "TipsyBuddy Wear OS v1.0.1: Smartwatch companion with real-time BAC, sober countdown, and 1-tap quick log."
                         }
                     ]
                 }

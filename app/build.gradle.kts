@@ -261,4 +261,7 @@ dependencies {
 
     // Google ML Kit On-Device Translation (free, offline after model download)
     implementation(libs.mlkit.translate)
+
+    // Google Play Billing (Subscriptions)
+    implementation(libs.billing.ktx)
 }
