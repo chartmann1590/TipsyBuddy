@@ -531,7 +531,7 @@ private fun SubscriptionSection(
                             if (!started) {
                                 Toast.makeText(
                                     context,
-                                    "Connecting to Google Play, please try again in a moment",
+                                    "Connecting to Google Play, please try again in a moment".tr(),
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -557,9 +557,9 @@ private fun SubscriptionSection(
                         subscriptionManager.restorePurchases { found ->
                             isRestoring = false
                             val msg = if (found) {
-                                "Ad-Free subscription restored successfully!"
+                                "Ad-Free subscription restored successfully!".tr()
                             } else {
-                                "No active subscription found on this Google Play account"
+                                "No active subscription found on this Google Play account".tr()
                             }
                             Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
                         }
