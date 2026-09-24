@@ -65,6 +65,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     val productDetails: StateFlow<ProductDetails?> = _productDetails.asStateFlow()
 
     private val pendingPurchasesParams = PendingPurchasesParams.newBuilder()
+        .enableOneTimeProducts()
         .build()
 
     private var billingClient: BillingClient = BillingClient.newBuilder(appContext)
