@@ -47,9 +47,21 @@ captures/
 .idea/caches
 .idea/libraries
 
-# Keystore files
+# Keystore, certificates and secrets
 *.jks
 *.keystore
+*.pem
+*.p8
+*.p12
+*.cert
+*.secrets*
+*key*.json
+*secret*.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
 
 # Google Services (Firebase)
 google-services.json
