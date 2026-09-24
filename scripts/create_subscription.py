@@ -14,7 +14,13 @@ PACKAGE_NAME = "com.tipsybuddy.app"
 SUBSCRIPTION_ID = "tipsybuddy_ad_free_monthly"
 BASE_PLAN_ID = "monthly-plan"
 SCOPES = ["https://www.googleapis.com/auth/androidpublisher"]
-KEY_FILE = r"H:\google-play\.secrets\play-console-fullaccess-key.json"
+
+KEY_FILE = os.environ.get("GOOGLE_PLAY_KEY_FILE")
+if not KEY_FILE:
+    raise RuntimeError(
+        "Environment variable GOOGLE_PLAY_KEY_FILE is not set. "
+        "Please set it to the path of the Google Play service account key file."
+    )
 
 
 def get_service():
@@ -95,7 +101,7 @@ def create_or_update_subscription():
             packageName=PACKAGE_NAME,
             productId=SUBSCRIPTION_ID,
             body=sub_body,
-            regionsVersion_version="2022/02"
+            regions_version="2022/02"
         ).execute()
         print(f"SUCCESS: Created subscription '{SUBSCRIPTION_ID}'!")
         print(json.dumps(created, indent=2))
