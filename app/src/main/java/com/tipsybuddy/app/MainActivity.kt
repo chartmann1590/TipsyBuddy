@@ -222,9 +222,7 @@ fun MainAppContent(
                                 onNavigateToLog = { currentScreen = AppScreen.LOG }
                             )
                         }
-                        if (!isAdFree) {
-                            AdMobBanner(modifier = Modifier.fillMaxWidth())
-                        }
+                        AdMobBanner(modifier = Modifier.fillMaxWidth())
                     }
                 }
 
@@ -258,9 +256,7 @@ fun MainAppContent(
                                 }
                             )
                         }
-                        if (!isAdFree) {
-                            AdMobBanner(modifier = Modifier.fillMaxWidth())
-                        }
+                        AdMobBanner(modifier = Modifier.fillMaxWidth())
                     }
                 }
 
