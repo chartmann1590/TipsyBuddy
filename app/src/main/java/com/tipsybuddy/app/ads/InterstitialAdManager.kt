@@ -10,6 +10,7 @@ import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.tipsybuddy.app.billing.SubscriptionManager
 
 /**
  * Loads / shows AdMob interstitials with light frequency capping.
@@ -27,8 +28,14 @@ object InterstitialAdManager {
     private var isLoading = false
     private var actionsSinceLastShow = 0
     private var lastShownAtMs = 0L
+    private var subscriptionManager: SubscriptionManager? = null
+
+    private fun getSubscriptionManager(context: Context): SubscriptionManager {
+        return subscriptionManager ?: SubscriptionManager.getInstance(context.applicationContext).also { subscriptionManager = it }
+    }
 
     fun preload(context: Context) {
+        if (getSubscriptionManager(context).isAdFree.value) return
         if (interstitial != null || isLoading) return
         isLoading = true
         val request = AdRequest.Builder().build()
@@ -57,6 +64,9 @@ object InterstitialAdManager {
      * counter and shows only when frequency caps allow and an ad is ready.
      */
     fun onNaturalMoment(activity: Activity?) {
+        if (activity != null) {
+            if (getSubscriptionManager(activity).isAdFree.value) return
+        }
         actionsSinceLastShow++
         if (activity == null || activity.isFinishing) {
             preload(activity?.applicationContext ?: return)
@@ -66,6 +76,7 @@ object InterstitialAdManager {
     }
 
     private fun maybeShow(activity: Activity) {
+        if (getSubscriptionManager(activity).isAdFree.value) return
         val ready = interstitial
         val now = System.currentTimeMillis()
         val cappedByActions = actionsSinceLastShow < MIN_ACTIONS_BETWEEN_SHOWS

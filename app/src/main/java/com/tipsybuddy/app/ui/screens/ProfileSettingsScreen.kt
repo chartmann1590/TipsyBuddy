@@ -30,6 +30,8 @@ import com.hartmann.crosspromo.ui.HartmannCrossPromoRow
 import com.tipsybuddy.app.ads.AdMobBanner
 import com.tipsybuddy.app.ads.OtherApp
 import com.tipsybuddy.app.ads.OtherAppsCatalog
+import com.tipsybuddy.app.ads.findActivity
+import com.tipsybuddy.app.billing.SubscriptionManager
 import com.tipsybuddy.app.data.UserPreferences
 import com.tipsybuddy.app.translation.AppTranslationManager
 import com.tipsybuddy.app.translation.LanguageItem
@@ -48,6 +50,8 @@ fun ProfileSettingsScreen(
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     val translationManager = LocalAppTranslationManager.current
+    val subscriptionManager = remember { SubscriptionManager.getInstance(context) }
+    val isAdFree by subscriptionManager.isAdFree.collectAsState()
 
     var userName by remember { mutableStateOf(userPrefs.userName) }
     var weightLbs by remember { mutableFloatStateOf(userPrefs.weightLbs) }
@@ -246,25 +250,30 @@ fun ProfileSettingsScreen(
             }
         }
 
-        // Dynamic cross-promotion ("More from Hartmann Studios")
-        if (HartmannCrossPromo.isInitialized) {
-            HartmannCrossPromoRow(placement = "settings")
-        } else {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-                border = BorderStroke(1.dp, CardBorder)
-            ) {
-                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(text = "OUR OTHER APPS".tr(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp)
-                    Text(text = "More apps from Charles — tap to open on Play Store".tr(), fontSize = 12.sp, color = TextSecondary)
-                    OtherAppsCatalog.apps.forEach { app -> OtherAppRow(app = app) }
+        // AD-FREE SUBSCRIPTION CARD
+        SubscriptionSection(subscriptionManager = subscriptionManager)
+
+        // Dynamic cross-promotion ("More from Hartmann Studios") - only shown for non-subscribers
+        if (!isAdFree) {
+            if (HartmannCrossPromo.isInitialized) {
+                HartmannCrossPromoRow(placement = "settings")
+            } else {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+                    border = BorderStroke(1.dp, CardBorder)
+                ) {
+                    Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(text = "OUR OTHER APPS".tr(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp)
+                        Text(text = "More apps from Charles — tap to open on Play Store".tr(), fontSize = 12.sp, color = TextSecondary)
+                        OtherAppsCatalog.apps.forEach { app -> OtherAppRow(app = app) }
+                    }
                 }
             }
-        }
 
-        AdMobBanner(modifier = Modifier.fillMaxWidth())
+            AdMobBanner(modifier = Modifier.fillMaxWidth())
+        }
 
         SupportFeedbackSection()
 
@@ -363,3 +372,209 @@ private fun OtherAppRow(app: OtherApp) {
         }
     }
 }
+
+@Composable
+private fun SubscriptionSection(
+    subscriptionManager: SubscriptionManager
+) {
+    val context = LocalContext.current
+    val isAdFree by subscriptionManager.isAdFree.collectAsState()
+    val formattedPrice by subscriptionManager.formattedPrice.collectAsState()
+    var isRestoring by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isAdFree) Color(0xFF0D251D) else SurfaceDark
+        ),
+        border = BorderStroke(1.dp, if (isAdFree) NeonGreen else CardBorder)
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isAdFree) "✨ PRO MEMBERSHIP".tr() else "⭐ UPGRADE TO AD-FREE".tr(),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isAdFree) NeonGreen else NeonGold,
+                    letterSpacing = 1.sp
+                )
+
+                Surface(
+                    color = if (isAdFree) NeonGreen.copy(alpha = 0.2f) else NeonGold.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = if (isAdFree) "ACTIVE".tr() else "GOOGLE PLAY".tr(),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isAdFree) NeonGreen else NeonGold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            if (isAdFree) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                        tint = NeonGreen,
+                        modifier = Modifier.size(30.dp)
+                    )
+                    Column {
+                        Text(
+                            text = "Ad-Free Experience Unlocked".tr(),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = "All banner and interstitial ads are completely removed. Thank you for supporting TipsyBuddy!".tr(),
+                            fontSize = 12.sp,
+                            color = TextSecondary
+                        )
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        val activity = context.findActivity()
+                        if (activity != null) {
+                            subscriptionManager.openPlayStoreSubscriptions(activity)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorder)
+                ) {
+                    Icon(Icons.Filled.Settings, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Manage Subscription on Google Play".tr(), color = TextSecondary, fontSize = 12.sp)
+                }
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.WorkspacePremium,
+                        contentDescription = null,
+                        tint = NeonGold,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Column {
+                        Text(
+                            text = "TipsyBuddy Ad-Free".tr(),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = "Enjoy an uninterrupted, 100% ad-free experience with zero banner or interstitial ads.".tr(),
+                            fontSize = 12.sp,
+                            color = TextSecondary
+                        )
+                    }
+                }
+
+                Surface(
+                    color = Color(0xFF0C1220),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, CardBorder),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Monthly Subscription".tr(),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TextPrimary
+                            )
+                            Text(
+                                text = "Cancel anytime via Google Play".tr(),
+                                fontSize = 11.sp,
+                                color = TextMuted
+                            )
+                        }
+                        Text(
+                            text = formattedPrice,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = NeonGold
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        val activity = context.findActivity()
+                        if (activity != null) {
+                            val started = subscriptionManager.launchPurchaseFlow(activity)
+                            if (!started) {
+                                Toast.makeText(
+                                    context,
+                                    "Connecting to Google Play, please try again in a moment".tr(),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = NeonGold)
+                ) {
+                    Icon(Icons.Filled.Stars, contentDescription = null, tint = Color.Black, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Subscribe to Remove Ads ($formattedPrice)".tr(),
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
+                }
+
+                TextButton(
+                    onClick = {
+                        isRestoring = true
+                        subscriptionManager.restorePurchases { found ->
+                            isRestoring = false
+                            val msg = if (found) {
+                                "Ad-Free subscription restored successfully!".tr()
+                            } else {
+                                "No active subscription found on this Google Play account".tr()
+                            }
+                            Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isRestoring
+                ) {
+                    Text(
+                        text = if (isRestoring) "Checking Google Play...".tr() else "Restore Purchases".tr(),
+                        color = NeonCyan,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
+    }
+}
+

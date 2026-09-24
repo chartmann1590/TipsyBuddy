@@ -1,0 +1,204 @@
+name: Publish to Google Play (Phone & Wear OS)
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Target track: "internal" (recommended first for Wear OS validation) or "production" (Production draft)'
+        required: true
+        type: choice
+        default: 'internal'
+        options:
+          - internal
+          - production
+      confirm_play_publish:
+        description: 'Type "publish" to confirm submission to Google Play'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes for this version (leave blank to auto-generate)'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.confirm_play_publish == 'publish' }}
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Ensure Android SDK packages
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          SDKMANAGER=""
+          for d in "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME"/cmdline-tools/*/bin; do
+            if [ -x "$d/sdkmanager" ]; then SDKMANAGER="$d/sdkmanager"; break; fi
+          done
+          if [ -z "$SDKMANAGER" ]; then echo "sdkmanager not found under $ANDROID_HOME/cmdline-tools"; exit 1; fi
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+          yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses > /dev/null || true
+
+      - name: Compute version code and version name
+        run: |
+          BASE_VERSION="1.0.0"
+          NOW_UTC=$(date -u +'%y%j%H%M')
+          WEAR_UTC=$((NOW_UTC + 1))
+          VERSION_NAME="${BASE_VERSION}.$(date -u +'%Y%m%d.%H%M')"
+          echo "ANDROID_VERSION_CODE=${NOW_UTC}" >> "$GITHUB_ENV"
+          echo "ANDROID_WEAR_VERSION_CODE=${WEAR_UTC}" >> "$GITHUB_ENV"
+          echo "ANDROID_VERSION_NAME=${VERSION_NAME}" >> "$GITHUB_ENV"
+          echo "Phone version code: $NOW_UTC"
+          echo "Wear OS version code: $WEAR_UTC"
+          echo "Version name: $VERSION_NAME"
+
+      - name: Decode keystore
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > tipsybuddy-release.jks
+            echo "Decoded keystore from KEYSTORE_BASE64"
+          else
+            echo "ERROR: KEYSTORE_BASE64 secret is not set"
+            exit 1
+          fi
+
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "tipsybuddy.storeFile=tipsybuddy-release.jks" >> local.properties
+          echo "tipsybuddy.storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
+          echo "tipsybuddy.keyAlias=${{ secrets.KEY_ALIAS }}" >> local.properties
+          echo "tipsybuddy.keyPassword=${{ secrets.KEY_PASSWORD }}" >> local.properties
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-play-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build release AABs (Phone & Wear OS)
+        env:
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
+          ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
+        run: ./gradlew :app:bundleRelease :wear:bundleRelease --no-daemon --stacktrace
+
+      - name: Generate release notes
+        run: |
+          mkdir -p distribution/whatsnew
+          NOTES_FILE="distribution/whatsnew/whatsnew-en-US"
+          if [ -n "${{ github.event.inputs.release_notes }}" ]; then
+            printf '%s' "${{ github.event.inputs.release_notes }}" > "$NOTES_FILE"
+          else
+            echo "Party smart, get home safe with TipsyBuddy! Initial production release featuring real-time BAC estimation, sober countdown, 1-tap drink tracking, live location sharing, emergency ride summoning, and Wear OS smartwatch companion." > "$NOTES_FILE"
+          fi
+          echo "Release notes:"
+          cat "$NOTES_FILE"
+
+      - name: Locate AAB files
+        id: aabs
+        run: |
+          PHONE_AAB=$(find app/build/outputs/bundle/release -name '*.aab' | head -1)
+          WEAR_AAB=$(find wear/build/outputs/bundle/release -name '*.aab' | head -1)
+          if [ -z "$PHONE_AAB" ]; then
+            echo "ERROR: Phone AAB not found"
+            exit 1
+          fi
+          echo "phone_path=$PHONE_AAB" >> "$GITHUB_OUTPUT"
+          echo "Phone AAB: $PHONE_AAB"
+          if [ -n "$WEAR_AAB" ]; then
+            echo "wear_path=$WEAR_AAB" >> "$GITHUB_OUTPUT"
+            echo "Wear AAB: $WEAR_AAB"
+            echo "combined_files=$PHONE_AAB,$WEAR_AAB" >> "$GITHUB_OUTPUT"
+          else
+            echo "wear_path=" >> "$GITHUB_OUTPUT"
+            echo "combined_files=$PHONE_AAB" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Find mapping file
+        id: mapping
+        run: |
+          MAPPING_PATH="app/build/outputs/mapping/release/mapping.txt"
+          if [ -f "$MAPPING_PATH" ]; then
+            echo "path=$MAPPING_PATH" >> "$GITHUB_OUTPUT"
+            echo "Mapping found: $MAPPING_PATH"
+          else
+            echo "path=" >> "$GITHUB_OUTPUT"
+            echo "No mapping file found"
+          fi
+
+      - name: Upload Phone AAB as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tipsybuddy-phone-release-aab
+          path: ${{ steps.aabs.outputs.phone_path }}
+          retention-days: 30
+
+      - name: Upload Wear OS AAB as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tipsybuddy-wear-release-aab
+          path: ${{ steps.aabs.outputs.wear_path }}
+          retention-days: 30
+        if: ${{ steps.aabs.outputs.wear_path != '' }}
+
+      - name: Upload mapping as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tipsybuddy-release-mapping
+          path: ${{ steps.mapping.outputs.path }}
+          retention-days: 30
+        if: ${{ steps.mapping.outputs.path != '' }}
+
+      - name: Verify Play Service Account
+        run: |
+          if [ -z "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}" ]; then
+            echo "ERROR: GOOGLE_PLAY_SERVICE_ACCOUNT_JSON secret is not set"
+            exit 1
+          fi
+          echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is present"
+
+      - name: Publish to Google Play (${{ github.event.inputs.track }})
+        uses: r0adkll/upload-google-play@v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.tipsybuddy.app
+          releaseFiles: ${{ steps.aabs.outputs.combined_files }}
+          track: ${{ github.event.inputs.track }}
+          status: ${{ github.event.inputs.track == 'production' && 'draft' || 'completed' }}
+          whatsNewDirectory: distribution/whatsnew
+          mappingFile: ${{ steps.mapping.outputs.path }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Play listing publish dependencies
+        run: pip install google-auth requests
+
+      - name: Publish store listing & graphics (multi-language text, icon, feature graphic, phone/tablet/wear screenshots)
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: python scripts/publish_play_listing.py

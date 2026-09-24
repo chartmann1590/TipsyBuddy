@@ -129,6 +129,8 @@ fun MainAppContent(
     // Wear OS Smartwatch Companion Sync
     val wearSyncManager = remember { PhoneWearSyncManager.getInstance(context) }
     val watchVitals by wearSyncManager.watchVitals.collectAsState()
+    val subscriptionManager = remember { com.tipsybuddy.app.billing.SubscriptionManager.getInstance(context) }
+    val isAdFree by subscriptionManager.isAdFree.collectAsState()
 
     // Periodic time ticker to continuously recalculate and push metabolized BAC & sobriety countdown
     var currentTimeMs by remember { mutableLongStateOf(System.currentTimeMillis()) }

@@ -1,23 +1,56 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 }
 
+val localProps = Properties()
+run {
+    val propsFile = rootProject.file("local.properties")
+    if (propsFile.exists()) {
+        propsFile.inputStream().use { stream -> localProps.load(stream) }
+    }
+}
+
 android {
     namespace = "com.tipsybuddy.wear"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.tipsybuddy.app"
         minSdk = 30
-        // targetSdk 34 (not 35): androidx.wear.compose.foundation 1.3.1's
-        // ScalingLazyColumn reads the reduce_motion Settings.Global key,
-        // which throws SecurityException for targetSdk 35+ on some system images.
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        targetSdk = 35
+        val envVersionCode = System.getenv("ANDROID_WEAR_VERSION_CODE")
+            ?: System.getenv("ANDROID_VERSION_CODE")?.let { (it.toLong() + 1).toString() }
+        val envVersionName = System.getenv("ANDROID_VERSION_NAME")
+        versionCode = envVersionCode?.toIntOrNull() ?: 2
+        versionName = envVersionName ?: "1.0.0"
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            val sf = localProps.getProperty("tipsybuddy.storeFile")
+                ?: localProps.getProperty("nutrisnap.storeFile")
+                ?: System.getenv("KEYSTORE_FILE")
+            if (!sf.isNullOrBlank()) {
+                val f = rootProject.file(sf)
+                if (f.exists()) {
+                    storeFile = f
+                }
+            }
+            storePassword = localProps.getProperty("tipsybuddy.storePassword")
+                ?: localProps.getProperty("nutrisnap.storePassword")
+                ?: System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyAlias = localProps.getProperty("tipsybuddy.keyAlias")
+                ?: localProps.getProperty("nutrisnap.keyAlias")
+                ?: System.getenv("KEY_ALIAS") ?: ""
+            keyPassword = localProps.getProperty("tipsybuddy.keyPassword")
+                ?: localProps.getProperty("nutrisnap.keyPassword")
+                ?: System.getenv("KEY_PASSWORD") ?: ""
         }
     }
 
@@ -28,6 +61,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val releaseSigning = signingConfigs.getByName("release")
+            if (releaseSigning.storeFile != null && releaseSigning.storeFile!!.exists()) {
+                signingConfig = releaseSigning
+            }
         }
         debug {
             isMinifyEnabled = false
