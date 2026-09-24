@@ -19,10 +19,12 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.tipsybuddy.app.data.UserPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Handles Google Play In-App Subscription billing for TipsyBuddy Ad-Free.
@@ -34,6 +36,8 @@ class SubscriptionManager private constructor(private val appContext: Context) :
         private const val TAG = "TipsyBilling"
         const val SUBSCRIPTION_PRODUCT_ID = "tipsybuddy_ad_free_monthly"
         const val PLAY_STORE_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions"
+        private const val MAX_ACK_RETRIES = 3
+        private const val ACK_RETRY_BASE_DELAY_MS = 1000L
 
         @Volatile
         private var instance: SubscriptionManager? = null
@@ -61,7 +65,6 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     val productDetails: StateFlow<ProductDetails?> = _productDetails.asStateFlow()
 
     private val pendingPurchasesParams = PendingPurchasesParams.newBuilder()
-        .enableOneTimeProducts()
         .build()
 
     private var billingClient: BillingClient = BillingClient.newBuilder(appContext)
@@ -263,16 +266,30 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     private fun acknowledgePurchase(purchase: Purchase) {
-        val ackParams = AcknowledgePurchaseParams.newBuilder()
-            .setPurchaseToken(purchase.purchaseToken)
-            .build()
-        billingClient.acknowledgePurchase(ackParams) { result ->
-            if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                Log.d(TAG, "Subscription purchase acknowledged successfully")
-            } else {
-                Log.w(TAG, "Failed to acknowledge subscription: ${result.debugMessage}")
+        val retryCount = AtomicInteger(0)
+        fun attemptAck() {
+            val ackParams = AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(purchase.purchaseToken)
+                .build()
+            billingClient.acknowledgePurchase(ackParams) { result ->
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                    Log.d(TAG, "Subscription purchase acknowledged successfully")
+                } else {
+                    val currentRetry = retryCount.incrementAndGet()
+                    if (currentRetry <= MAX_ACK_RETRIES) {
+                        val delayMs = ACK_RETRY_BASE_DELAY_MS * (2L shl (currentRetry - 1))
+                        Log.w(TAG, "Failed to acknowledge subscription (attempt $currentRetry/$MAX_ACK_RETRIES): ${result.debugMessage}. Retrying in ${delayMs}ms")
+                        scope.launch(Dispatchers.IO) {
+                            delay(delayMs)
+                            attemptAck()
+                        }
+                    } else {
+                        Log.e(TAG, "Failed to acknowledge subscription after $MAX_ACK_RETRIES attempts: ${result.debugMessage}. Purchase will be auto-refunded by Google Play.")
+                    }
+                }
             }
         }
+        attemptAck()
     }
 
     private fun updateSubscriptionState(active: Boolean) {
