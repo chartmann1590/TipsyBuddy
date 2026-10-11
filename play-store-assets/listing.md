@@ -51,7 +51,7 @@ Whether you're celebrating with a crew, enjoying dinner, or pacing yourself for 
 **🔒 Private by Design**
 • Your drinks, spending, and health data stay private on your device
 • Live location sharing is 100% opt-in, only accessible via the unique link you share, and expires automatically
-• No ads tracking your private personal life
+• The free version shows ads; the Ad-Free subscription removes them
 
 **⚠️ Important Safety Notice**
 TipsyBuddy provides estimated calculations based on standard physiological formulas (Widmark formula) for informational and harm-reduction purposes only. Metabolic rates vary greatly based on food intake, hydration, medications, fatigue, and individual biology. **Never drink and drive.** Always use a designated driver, taxi, or rideshare service. If you or someone around you requires urgent medical care, call your local emergency services immediately.
