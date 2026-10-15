@@ -1,0 +1,7 @@
+file 'H:/drinking-buddy/play-store-assets/fgs_policy_video/temp/clip_01_intro_policy.mp4'
+file 'H:/drinking-buddy/play-store-assets/fgs_policy_video/temp/clip_02_user_initiated_sharing.mp4'
+file 'H:/drinking-buddy/play-store-assets/fgs_policy_video/temp/clip_03_persistent_notification.mp4'
+file 'H:/drinking-buddy/play-store-assets/fgs_policy_video/temp/clip_04_background_updates.mp4'
+file 'H:/drinking-buddy/play-store-assets/fgs_policy_video/temp/clip_05_web_companion.mp4'
+file 'H:/drinking-buddy/play-store-assets/fgs_policy_video/temp/clip_06_user_termination.mp4'
+file 'H:/drinking-buddy/play-store-assets/fgs_policy_video/temp/clip_07_summary_compliance.mp4'
