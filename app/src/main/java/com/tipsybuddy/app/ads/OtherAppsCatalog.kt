@@ -80,12 +80,16 @@ object OtherAppsCatalog {
     )
 
     fun open(context: Context, app: OtherApp) {
+        if (com.tipsybuddy.app.BuildConfig.STORE == "direct") { // direct (non-Play) build: the download page, not Google Play
+            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://charleshartmann.com/apps/")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            return
+        }
         val pkg = app.packageId
         if (!pkg.isNullOrBlank()) {
             // Prefer Play Store market:// deep link
             val marketIntent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse("market://details?id=$pkg")
+                Uri.parse((if (com.tipsybuddy.app.BuildConfig.STORE == "direct") "https://charleshartmann.com/apps/" else "market://details?id=$pkg"))
             ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             try {
                 context.startActivity(marketIntent)
@@ -97,7 +101,7 @@ object OtherAppsCatalog {
                 context.startActivity(
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
+                        Uri.parse((if (com.tipsybuddy.app.BuildConfig.STORE == "direct") "https://charleshartmann.com/apps/" else "https://play.google.com/store/apps/details?id=$pkg"))
                     ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
                 return

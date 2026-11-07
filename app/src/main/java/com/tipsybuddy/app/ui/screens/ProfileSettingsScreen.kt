@@ -32,6 +32,7 @@ import com.tipsybuddy.app.ads.OtherApp
 import com.tipsybuddy.app.ads.OtherAppsCatalog
 import com.tipsybuddy.app.ads.findActivity
 import com.tipsybuddy.app.billing.SubscriptionManager
+import com.hartmannstudios.direct.DirectBilling
 import com.tipsybuddy.app.data.UserPreferences
 import com.tipsybuddy.app.translation.AppTranslationManager
 import com.tipsybuddy.app.translation.LanguageItem
@@ -460,7 +461,7 @@ private fun SubscriptionSection(
                 ) {
                     Icon(Icons.Filled.Settings, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Manage Subscription on Google Play".tr(), color = TextSecondary, fontSize = 12.sp)
+                    Text(text = (if (DirectBilling.isDirect) "Manage Subscription" else "Manage Subscription on Google Play").tr(), color = TextSecondary, fontSize = 12.sp)
                 }
             } else {
                 Row(
@@ -509,7 +510,7 @@ private fun SubscriptionSection(
                                 color = TextPrimary
                             )
                             Text(
-                                text = "Cancel anytime via Google Play".tr(),
+                                text = (if (DirectBilling.isDirect) "Cancel anytime. Secure checkout by Stripe, USD" else "Cancel anytime via Google Play").tr(),
                                 fontSize = 11.sp,
                                 color = TextMuted
                             )
@@ -554,12 +555,12 @@ private fun SubscriptionSection(
                 TextButton(
                     onClick = {
                         isRestoring = true
-                        subscriptionManager.restorePurchases { found ->
+                        subscriptionManager.restorePurchases(context.findActivity()) { found ->
                             isRestoring = false
                             val msg = if (found) {
                                 "Ad-Free subscription restored successfully!".tr()
                             } else {
-                                "No active subscription found on this Google Play account".tr()
+                                (if (DirectBilling.isDirect) "No active subscription found for that email" else "No active subscription found on this Google Play account").tr()
                             }
                             Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
                         }
@@ -568,7 +569,7 @@ private fun SubscriptionSection(
                     enabled = !isRestoring
                 ) {
                     Text(
-                        text = if (isRestoring) "Checking Google Play...".tr() else "Restore Purchases".tr(),
+                        text = if (isRestoring) (if (DirectBilling.isDirect) "Checking..." else "Checking Google Play...").tr() else "Restore Purchases".tr(),
                         color = NeonCyan,
                         fontSize = 12.sp
                     )

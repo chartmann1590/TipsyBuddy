@@ -15,6 +15,12 @@ import java.net.URLEncoder
 object PlayStoreLauncher {
 
     /**
+     * Direct-download (non-Play) builds of the host app set this to the download page; when set,
+     * [launch] opens it instead of a Google Play listing. Null (the default) keeps Play behaviour.
+     */
+    @JvmStatic @Volatile var directDownloadUrl: String? = null
+
+    /**
      * Attribution extras appended to the Play URL as `referrer`, using the
      * documented UTM scheme consumed by the Play Install Referrer API:
      * https://developer.android.com/google/play/installreferrer
@@ -50,6 +56,14 @@ object PlayStoreLauncher {
      */
     fun launch(context: Context, targetPackage: String, sourcePackage: String?): Boolean {
         if (targetPackage.isBlank()) return false
+        directDownloadUrl?.let { url ->
+            return try {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
         val market = Intent(Intent.ACTION_VIEW, Uri.parse(marketUri(targetPackage, sourcePackage))).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }

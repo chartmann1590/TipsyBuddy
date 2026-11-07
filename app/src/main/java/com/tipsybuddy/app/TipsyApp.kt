@@ -18,6 +18,9 @@ class TipsyApp : Application() {
         osmConfig.osmdroidBasePath = File(cacheDir, "osmdroid")
         osmConfig.osmdroidTileCache = File(cacheDir, "osmdroid/tiles")
 
+        // Direct (GitHub / charleshartmann.com) build: cross-promo opens the download page, not Google Play.
+        if (BuildConfig.STORE == "direct") com.hartmann.crosspromo.launcher.PlayStoreLauncher.directDownloadUrl = "https://charleshartmann.com/apps/"
+
         // Initialize Google Play Billing / Subscription Manager
         com.tipsybuddy.app.billing.SubscriptionManager.getInstance(this)
 

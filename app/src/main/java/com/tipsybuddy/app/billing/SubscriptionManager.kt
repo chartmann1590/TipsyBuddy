@@ -17,6 +17,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.tipsybuddy.app.data.UserPreferences
+import com.hartmannstudios.direct.DirectBilling
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
@@ -35,6 +36,8 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     companion object {
         private const val TAG = "TipsyBilling"
         const val SUBSCRIPTION_PRODUCT_ID = "tipsybuddy_ad_free_monthly"
+        // Stripe catalog key (shared Hartmann Studios billing worker, app "tipsybuddy")
+        const val DIRECT_AD_FREE_MONTHLY = "tipsybuddy_ad_free_monthly"
         const val PLAY_STORE_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions"
         private const val MAX_ACK_RETRIES = 3
         private const val ACK_RETRY_BASE_DELAY_MS = 1000L
@@ -68,16 +71,42 @@ class SubscriptionManager private constructor(private val appContext: Context) :
         .enableOneTimeProducts()
         .build()
 
-    private var billingClient: BillingClient = BillingClient.newBuilder(appContext)
-        .setListener(this)
-        .enablePendingPurchases(pendingPurchasesParams)
-        .build()
+    // Lazy: direct (non-Play) builds never create a Google Play BillingClient.
+    private val billingClient: BillingClient by lazy {
+        BillingClient.newBuilder(appContext)
+            .setListener(this)
+            .enablePendingPurchases(pendingPurchasesParams)
+            .build()
+    }
 
     init {
-        startConnection()
+        if (DirectBilling.isDirect) startDirect() else startConnection()
+    }
+
+    // ── Direct (GitHub / charleshartmann.com) build: Stripe Checkout through DirectBilling instead of Google Play ──
+    private fun startDirect() {
+        DirectBilling.init(appContext, "tipsybuddy")
+        _formattedPrice.value = "$2.99 / month"
+        _isBillingReady.value = true
+        DirectBilling.addListener { updateDirect() }
+        updateDirect()
+    }
+
+    private fun updateDirect() {
+        updateSubscriptionState(DirectBilling.isEntitled(DIRECT_AD_FREE_MONTHLY))
+    }
+
+    /** Restore: direct builds look the Stripe purchase up by email (needs an Activity for the email dialog). */
+    fun restorePurchases(activity: Activity?, onComplete: (Boolean) -> Unit) {
+        if (DirectBilling.isDirect && activity != null) {
+            DirectBilling.restore(activity) { onComplete(DirectBilling.isEntitled(DIRECT_AD_FREE_MONTHLY)) }
+        } else {
+            restorePurchases(onComplete)
+        }
     }
 
     fun startConnection() {
+        if (DirectBilling.isDirect) return
         if (!billingClient.isReady) {
             billingClient.startConnection(this)
         }
@@ -101,6 +130,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     fun querySubscriptionDetails() {
+        if (DirectBilling.isDirect) return
         if (!billingClient.isReady) {
             startConnection()
             return
@@ -137,6 +167,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     fun queryPurchases() {
+        if (DirectBilling.isDirect) { updateDirect(); return }
         if (!billingClient.isReady) return
 
         val params = QueryPurchasesParams.newBuilder()
@@ -165,6 +196,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     fun launchPurchaseFlow(activity: Activity): Boolean {
+        if (DirectBilling.isDirect) { DirectBilling.purchase(activity, DIRECT_AD_FREE_MONTHLY); return true }
         if (!billingClient.isReady) {
             startConnection()
             return false
@@ -197,6 +229,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     fun restorePurchases(onComplete: (Boolean) -> Unit) {
+        if (DirectBilling.isDirect) { updateDirect(); scope.launch { onComplete(_isAdFree.value) }; return }
         if (!billingClient.isReady) {
             billingClient.startConnection(object : BillingClientStateListener {
                 override fun onBillingSetupFinished(billingResult: BillingResult) {
@@ -299,6 +332,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     fun openPlayStoreSubscriptions(activity: Activity) {
+        if (DirectBilling.isDirect) { DirectBilling.manageSubscription(activity); return }
         try {
             val intent = Intent(
                 Intent.ACTION_VIEW,

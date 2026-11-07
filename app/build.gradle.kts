@@ -52,10 +52,15 @@ fun resolveAdMobId(
 }
 
 android {
+    // DirectBilling: real Stripe client in direct builds, a no-op stub in Play builds
+    sourceSets.getByName("main").java.srcDir(if (((project.findProperty("store") as String?) ?: "play") == "direct") "src/hsdirect/java" else "src/hsplay/java")
     namespace = "com.tipsybuddy.app"
     compileSdk = 36
 
     defaultConfig {
+        // Store this build is for: "play" (default) or "direct" (./gradlew ... -Pstore=direct, GitHub/charleshartmann.com APK).
+        // Direct builds use Stripe Checkout (DirectBilling) instead of Google Play Billing, and drop Play links + the Play review prompt.
+        buildConfigField("String", "STORE", "\"${(project.findProperty("store") as String?) ?: "play"}\"")
         applicationId = "com.tipsybuddy.app"
         minSdk = 26
         targetSdk = 36

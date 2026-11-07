@@ -1,0 +1,18 @@
+launch
+wait 20
+taploop (?i)^(allow|while using the app|only this time|ok)$
+tap (?i)^skip$
+wait 4
+taploop (?i)^(allow|while using the app|only this time|ok|not now|got it|dismiss)$
+shot 20-tonight
+tap (?i)^profile$
+wait 4
+scrollto (?i)^restore purchases$
+wait 3
+shot 21-restore-email
+type hartmannstudios@mail.tab.bot
+tap (?i)^continue$
+wait 15
+shot 22-after-restore
+shot 23-profile-adfree
+sh logcat -d -s DirectBilling
