@@ -1,0 +1,39 @@
+launch
+wait 20
+shot 01-launch
+taploop (?i)^(allow|while using the app|only this time|ok)$
+tap (?i)^skip$
+wait 4
+taploop (?i)^(allow|while using the app|only this time|ok|not now|got it|dismiss)$
+shot 02-tonight
+tap (?i)^log$
+wait 3
+shot 03-log
+tap (?i)^calendar$
+wait 3
+shot 04-calendar
+tap (?i)^health$
+wait 3
+shot 05-health
+tap (?i)^live share$
+wait 4
+taploop (?i)^(allow|while using the app|only this time|ok)$
+shot 06-liveshare
+tap (?i)^rides$
+wait 3
+shot 07-rides
+tap (?i)^profile$
+wait 4
+shot 08-profile
+swipeup
+shot 09-profile-2
+swipeup
+shot 10-profile-3
+swipeup
+shot 11-profile-4
+swipeup
+swipeup
+shot 12-profile-bottom
+tap (?i)^tonight$
+wait 3
+shot 13-back-tonight

@@ -85,7 +85,7 @@ object OtherAppsCatalog {
             // Prefer Play Store market:// deep link
             val marketIntent = Intent(
                 Intent.ACTION_VIEW,
-                Uri.parse("market://details?id=$pkg")
+                Uri.parse((if (com.tipsybuddy.app.BuildConfig.STORE == "amazon") "amzn://apps/android?p=$pkg" else "market://details?id=$pkg"))
             ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             try {
                 context.startActivity(marketIntent)
@@ -97,7 +97,7 @@ object OtherAppsCatalog {
                 context.startActivity(
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
+                        Uri.parse((if (com.tipsybuddy.app.BuildConfig.STORE == "amazon") "https://www.amazon.com/gp/mas/dl/android?p=$pkg" else "https://play.google.com/store/apps/details?id=$pkg"))
                     ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
                 return

@@ -52,7 +52,8 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     private val userPrefs = UserPreferences(appContext)
     private val scope = MainScope()
 
-    private val _isAdFree = MutableStateFlow(userPrefs.isAdFreeSubscribed)
+    // Amazon Appstore build: no Google Play Billing; never ad-free (free with ads).
+    private val _isAdFree = MutableStateFlow(!(com.tipsybuddy.app.BuildConfig.STORE == "amazon") && userPrefs.isAdFreeSubscribed)
     val isAdFree: StateFlow<Boolean> = _isAdFree.asStateFlow()
 
     private val _isBillingReady = MutableStateFlow(false)
@@ -78,6 +79,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     fun startConnection() {
+        if (com.tipsybuddy.app.BuildConfig.STORE == "amazon") return
         if (!billingClient.isReady) {
             billingClient.startConnection(this)
         }
@@ -165,6 +167,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     fun launchPurchaseFlow(activity: Activity): Boolean {
+        if (com.tipsybuddy.app.BuildConfig.STORE == "amazon") return false
         if (!billingClient.isReady) {
             startConnection()
             return false
@@ -197,6 +200,7 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     fun restorePurchases(onComplete: (Boolean) -> Unit) {
+        if (com.tipsybuddy.app.BuildConfig.STORE == "amazon") { onComplete(false); return }
         if (!billingClient.isReady) {
             billingClient.startConnection(object : BillingClientStateListener {
                 override fun onBillingSetupFinished(billingResult: BillingResult) {
@@ -294,11 +298,13 @@ class SubscriptionManager private constructor(private val appContext: Context) :
     }
 
     private fun updateSubscriptionState(active: Boolean) {
+        if (com.tipsybuddy.app.BuildConfig.STORE == "amazon") { _isAdFree.value = false; return }
         _isAdFree.value = active
         userPrefs.isAdFreeSubscribed = active
     }
 
     fun openPlayStoreSubscriptions(activity: Activity) {
+        if (com.tipsybuddy.app.BuildConfig.STORE == "amazon") return
         try {
             val intent = Intent(
                 Intent.ACTION_VIEW,

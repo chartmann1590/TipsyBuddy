@@ -250,12 +250,17 @@ fun ProfileSettingsScreen(
             }
         }
 
-        // AD-FREE SUBSCRIPTION CARD
-        SubscriptionSection(subscriptionManager = subscriptionManager)
+        // AD-FREE SUBSCRIPTION CARD (not in the Amazon Appstore build: no Play purchases, free with ads)
+        if (com.tipsybuddy.app.BuildConfig.STORE != "amazon") {
+            SubscriptionSection(subscriptionManager = subscriptionManager)
+        }
 
         // Dynamic cross-promotion ("More from Hartmann Studios") - only shown for non-subscribers
         if (!isAdFree) {
-            if (HartmannCrossPromo.isInitialized) {
+            // Amazon Appstore build: no cross-promo (its links open Google Play).
+            if (com.tipsybuddy.app.BuildConfig.STORE == "amazon") {
+                // nothing: the banner below still shows
+            } else if (HartmannCrossPromo.isInitialized) {
                 HartmannCrossPromoRow(placement = "settings")
             } else {
                 Card(
