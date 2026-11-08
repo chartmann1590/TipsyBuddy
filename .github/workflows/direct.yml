@@ -126,6 +126,8 @@ jobs:
       env:
         DROP_KEY: ${{ secrets.DROP_KEY }}
       run: |
+        # The signed APK rides along (private drop, key-protected, 48 h TTL) so it can be device-tested before the draft is published.
+        mkdir -p /tmp/dsk-out && cp dsk-apk/*.apk /tmp/dsk-out/ 2>/dev/null || true
         bash .github/direct/direct-upload.sh /tmp/dsk-out dsk_TipsyBuddy_r${{ github.run_number }}
     - name: Draft release with the direct APK (not published)
       if: success()
