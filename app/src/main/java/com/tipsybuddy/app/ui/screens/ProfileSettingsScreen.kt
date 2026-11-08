@@ -413,7 +413,7 @@ private fun SubscriptionSection(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = if (isAdFree) "ACTIVE".tr() else "GOOGLE PLAY".tr(),
+                        text = if (isAdFree) "ACTIVE".tr() else (if (DirectBilling.isDirect) "STRIPE" else "GOOGLE PLAY").tr(),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (isAdFree) NeonGreen else NeonGold,
