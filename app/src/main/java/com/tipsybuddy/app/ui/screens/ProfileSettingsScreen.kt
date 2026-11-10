@@ -559,6 +559,10 @@ private fun SubscriptionSection(
                             isRestoring = false
                             val msg = if (found) {
                                 "Ad-Free subscription restored successfully!".tr()
+                            } else if (DirectBilling.isDirect && DirectBilling.lastRestoreRateLimited) {
+                                DirectBilling.RATE_LIMITED_MESSAGE.tr()
+                            } else if (DirectBilling.isDirect && DirectBilling.lastRestoreUnreachable) {
+                                "Couldn't reach the license server. Try again.".tr()
                             } else {
                                 (if (DirectBilling.isDirect) "No active subscription found for that email" else "No active subscription found on this Google Play account").tr()
                             }
